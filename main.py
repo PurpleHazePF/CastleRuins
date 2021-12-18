@@ -1,4 +1,5 @@
 import pygame
+import math
 from player import *
 pygame.init()
 size = width, height = 800, 600
@@ -18,17 +19,23 @@ while running:
         screen.fill("gray")
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
-            x += 0
-            y += -speed
+            x += math.cos(vector) * 5
+            y += math.sin(vector) * 5
         if keys[pygame.K_s]:
-            x += 0
-            y += speed
+            x -= math.cos(vector) * 5
+            y -= math.sin(vector) * 5
         if keys[pygame.K_a]:
-            x += -speed
-            y += 0
+            vector += 0.1
+            if vector > 180:
+                vector = -180
+            elif vector < -180:
+                vector = 180
         if keys[pygame.K_d]:
-            x += speed
-            y += 0
+            vector -= 0.1
+            if vector > 180:
+                vector = -180
+            elif vector < -180:
+                vector = 180
         pygame.draw.circle(screen, "red", (x, y), 10)
     clock.tick(fps)
     pygame.display.flip()
