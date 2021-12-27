@@ -1,13 +1,11 @@
-from player import BLOCK_SIZE
-
 text_map = [
+    'WWWWWWWWW',
+    'W.W.W.W.W',
     'W.......W',
-    '..W.W.W..',
-    '.........',
     'W.......W',
-    '....W....',
+    'W..WWW..W',
     'W.......W',
-    'W.......W'
+    'WWWWWWWWW'
 ]   # example map
 map_cord = set()
 width, height = 900, 650
