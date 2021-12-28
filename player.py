@@ -9,7 +9,6 @@ dlina_vzglyada = (40, 40)
 
 OBZOR = math.pi / 3
 NUM_RAYS = 150
-MAX_DEPTH = 800
 DELTA_ANGLE = OBZOR / NUM_RAYS
 PROJ_COEFF = 2 * NUM_RAYS / (2 * math.tan(OBZOR / 2)) * BLOCK_SIZE_X
 SCALE = width // NUM_RAYS

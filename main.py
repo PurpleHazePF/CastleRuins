@@ -1,8 +1,8 @@
 import math
 import os
 import pygame
-from pygame import Color
 import sys
+from pygame import Color
 
 from map import *
 from player import *
@@ -52,7 +52,7 @@ class Raycast(pygame.sprite.Sprite):
             m = x0
             dm = -1
 
-        for i in range(0, width, int(BLOCK_SIZE_X)):  # проходим по вертикалям пока не найдем пересечение со стеной
+        for _ in range(0, width, int(BLOCK_SIZE_X)):  # проходим по вертикалям пока не найдем пересечение со стеной
             if cos_a != 0:
                 depth_v = (m - self.nach_x) / cos_a
             else:
@@ -69,7 +69,7 @@ class Raycast(pygame.sprite.Sprite):
             k = y0
             dk = -1
 
-        for j in range(0, height, int(BLOCK_SIZE_Y)):  # проходим по горизонталям пока не найдем пересечение со стеной
+        for _ in range(0, height, int(BLOCK_SIZE_Y)):  # проходим по горизонталям пока не найдем пересечение со стеной
             if sin_a != 0:
                 depth_h = (k - self.nach_y) / sin_a
             else:
@@ -136,9 +136,10 @@ for i in range(NUM_RAYS):  # создаем лучи
 for i, j in map_cord:
     Stena(steny, i, j)  # инициализируем стены
 Persona(personazh)  # инициализируем персонажа
+pygame.mouse.set_visible(False)
 while running:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if pygame.key.get_pressed()[pygame.K_ESCAPE]:  # теперь выход на кнопке ESCAPE
             running = False
     if pygame.key.get_pressed()[pygame.K_w]:
         for _ in range(speed):  # для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
@@ -170,17 +171,40 @@ while running:
                     y += math.sin(vector)
                     personazh.update()
     if pygame.key.get_pressed()[pygame.K_a]:
-        vector -= 0.07
-        if vector > 180:
-            vector = -180
-        elif vector < -180:
-            vector = 180
+        for _ in range(speed):
+            if width - SIZE + 1 > x - math.cos(vector + 90) > 0:
+                x -= math.cos(vector + 90)
+                personazh.update()
+                if pygame.sprite.groupcollide(steny, personazh, False, False):
+                    x += math.cos(vector + 90)
+                    personazh.update()
+            if height - SIZE + 1 > y - math.sin(vector + 90) > 0:
+                y -= math.sin(vector + 90)
+                personazh.update()
+                if pygame.sprite.groupcollide(steny, personazh, False, False):
+                    y += math.sin(vector + 90)
+                    personazh.update()
     if pygame.key.get_pressed()[pygame.K_d]:
-        vector += 0.07
-        if vector > 180:
+        for _ in range(speed):
+            if width - SIZE + 1 > x - math.cos(vector - 90) > 0:
+                x -= math.cos(vector - 90)
+                personazh.update()
+                if pygame.sprite.groupcollide(steny, personazh, False, False):
+                    x += math.cos(vector - 90)
+                    personazh.update()
+            if height - SIZE + 1 > y - math.sin(vector - 90) > 0:
+                y -= math.sin(vector - 90)
+                personazh.update()
+                if pygame.sprite.groupcollide(steny, personazh, False, False):
+                    y += math.sin(vector - 90)
+                    personazh.update()
+    if pygame.mouse.get_focused():
+        vector += povorot_vectora * (pygame.mouse.get_pos()[0] - seredina_w)  # прибавляем изменение положения мышки
+        if vector > 180:                                                      # умноженное на чувствительность мышки
             vector = -180
         elif vector < -180:
             vector = 180
+    pygame.mouse.set_pos([seredina_w, seredina_h])  # возвращаем мышку обратно в центр
     screen.fill('black')
     pygame.draw.rect(screen, (0, 0, 230), (0, 0, width, height / 2))  # потолок
     pygame.draw.rect(screen, (50, 50, 50), (0, height / 2, width, height / 2))  # пол

@@ -8,9 +8,11 @@ def load_level(filename):
 
 text_map = load_level('text_map.txt')  # example map
 map_cord = set()
-width, height = 900, 650
-BLOCK_SIZE_X = (width / len(text_map[0])) // 1 + 1
-BLOCK_SIZE_Y = (height / len(text_map)) // 1 + 1
+width, height = 1200, 900
+seredina_w, seredina_h = width * 0.5, height * 0.5
+povorot_vectora = 1 / seredina_w  # чувствительность мышки
+BLOCK_SIZE_X = (width / len(text_map[0])) // 1
+BLOCK_SIZE_Y = (height / len(text_map)) // 1
 for j, row in enumerate(text_map):
     for i, bloc in enumerate(row):
         if bloc == 'W':
