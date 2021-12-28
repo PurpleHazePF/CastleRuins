@@ -1,14 +1,12 @@
-from player import BLOCK_SIZE
+def load_level(filename):
+    filename = "assets/" + filename
+    # читаем уровень, убирая символы перевода строки
+    with open(filename, 'r') as mapFile:
+        level_map = [line.strip() for line in mapFile]
+    return level_map
 
-text_map = [
-    'W.......W',
-    '..W.W.W..',
-    '.........',
-    'W.......W',
-    '....W....',
-    'W.......W',
-    'W.......W'
-]   # example map
+
+text_map = load_level('text_map.txt')  # example map
 map_cord = set()
 width, height = 900, 650
 BLOCK_SIZE_X = (width / len(text_map[0])) // 1 + 1
