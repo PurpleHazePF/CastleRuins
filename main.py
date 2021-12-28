@@ -1,6 +1,7 @@
 import math
 import os
 import pygame
+from pygame import Color
 import sys
 
 from map import *
@@ -22,10 +23,10 @@ class Stena(pygame.sprite.Sprite):  # для отрисовки стен
         self.rect = pygame.Rect((0, 0, BLOCK_SIZE_X, BLOCK_SIZE_Y))
         self.rect.x = a
         self.rect.y = b
-        # pygame.draw.rect(screen, "blue", (self.rect.x, self.rect.y, BLOCK_SIZE_X, BLOCK_SIZE_Y))
 
     def update(self):
-        pygame.draw.rect(screen, "blue", (self.rect.x, self.rect.y, BLOCK_SIZE_X, BLOCK_SIZE_Y))
+        pygame.draw.rect(screen, "black",
+                         (self.rect.x * 0.1, self.rect.y * 0.1, BLOCK_SIZE_X * 0.1 + 1, BLOCK_SIZE_Y * 0.1 + 1))
 
 
 class Raycast(pygame.sprite.Sprite):
@@ -88,7 +89,12 @@ class Raycast(pygame.sprite.Sprite):
             p_h = PROJ_COEFF / depth  # получаем высоту проекции
         else:
             p_h = 0
-        pygame.draw.rect(screen, 'ORANGE',
+        color1 = Color(255, 255, 255)
+        if p_h <= 255:
+            color1.hsva = (0, 100, int((p_h / 255) * 100), 100)
+        else:
+            color1.hsva = (0, 100, 100, 100)
+        pygame.draw.rect(screen, color1,
                          (self.ray * SCALE, height // 2 - p_h // 2, SCALE, p_h))  # отображаем стену
 
 
@@ -98,12 +104,12 @@ class Persona(pygame.sprite.Sprite):  # для перемещения и отр�
         self.rect = pygame.Rect((0, 0, SIZE, SIZE))
         self.rect.x = x
         self.rect.y = y
-        # pygame.draw.circle(screen, 'red', (self.rect.x + SIZE * 0.5, self.rect.y + SIZE * 0.5), SIZE * 0.5)
 
     def update(self):
         self.rect.x = x
         self.rect.y = y
-        # pygame.draw.circle(screen, 'red', (self.rect.x + SIZE * 0.5, self.rect.y + SIZE * 0.5), SIZE * 0.5)
+        pygame.draw.circle(screen, 'white', ((self.rect.x + SIZE * 0.5) * 0.1,
+                                             (self.rect.y + SIZE * 0.5) * 0.1), SIZE * 0.5)
 
 
 pygame.init()
@@ -134,57 +140,53 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if pygame.key.get_pressed()[pygame.K_w]:
-            for _ in range(speed):  # для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
-                if width - SIZE + 1 > x + math.cos(vector) > 0:
-                    x += math.cos(vector)
-                    personazh.update()
-                    if pygame.sprite.groupcollide(steny, personazh, False,
-                                                  False):  # проверка на столкновение с препядствием
-                        x -= math.cos(vector)
-                        personazh.update()
-                if height - SIZE + 1 > y + math.sin(vector) > 0:
-                    y += math.sin(vector)
-                    personazh.update()
-                    if pygame.sprite.groupcollide(steny, personazh, False, False):
-                        y -= math.sin(vector)
-                        personazh.update()
-        if pygame.key.get_pressed()[pygame.K_s]:
-            for _ in range(speed):
-                if width - SIZE + 1 > x - math.cos(vector) > 0:
+    if pygame.key.get_pressed()[pygame.K_w]:
+        for _ in range(speed):  # для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
+            if width - SIZE + 1 > x + math.cos(vector) > 0:
+                x += math.cos(vector)
+                personazh.update()
+                if pygame.sprite.groupcollide(steny, personazh, False,
+                                              False):  # проверка на столкновение с препяnствием
                     x -= math.cos(vector)
                     personazh.update()
-                    if pygame.sprite.groupcollide(steny, personazh, False, False):
-                        x += math.cos(vector)
-                        personazh.update()
-                if height - SIZE + 1 > y - math.sin(vector) > 0:
+            if height - SIZE + 1 > y + math.sin(vector) > 0:
+                y += math.sin(vector)
+                personazh.update()
+                if pygame.sprite.groupcollide(steny, personazh, False, False):
                     y -= math.sin(vector)
                     personazh.update()
-                    if pygame.sprite.groupcollide(steny, personazh, False, False):
-                        y += math.sin(vector)
-                        personazh.update()
-        if pygame.key.get_pressed()[pygame.K_a]:
-            vector -= 0.07
-            if vector > 180:
-                vector = -180
-            elif vector < -180:
-                vector = 180
-        if pygame.key.get_pressed()[pygame.K_d]:
-            vector += 0.07
-            if vector > 180:
-                vector = -180
-            elif vector < -180:
-                vector = 180
-        screen.fill('black')
-        pygame.draw.rect(screen, (0, 0, 230), (0, 0, width, height / 2))  # потолок
-        pygame.draw.rect(screen, (50, 50, 50), (0, height / 2, width, height / 2))  # пол
-        personazh.update()
-        rays.update()
-    # теперь рисуем линию из (координат шарика) в (координаты шарика+направления(vector)*на длину стороны квадрата)
-    # если что, то линия - это диагональ квадрата c шириной и высотой длина взгляда
-    # pygame.draw.line(screen, "red", (x + SIZE * 0.5, y + SIZE * 0.5),
-    #                 (x + SIZE * 0.5 + math.cos(vector) * dlina_vzglyada[0],
-    #                  y + SIZE * 0.5 + math.sin(vector) * dlina_vzglyada[1]))
+    if pygame.key.get_pressed()[pygame.K_s]:
+        for _ in range(speed):
+            if width - SIZE + 1 > x - math.cos(vector) > 0:
+                x -= math.cos(vector)
+                personazh.update()
+                if pygame.sprite.groupcollide(steny, personazh, False, False):
+                    x += math.cos(vector)
+                    personazh.update()
+            if height - SIZE + 1 > y - math.sin(vector) > 0:
+                y -= math.sin(vector)
+                personazh.update()
+                if pygame.sprite.groupcollide(steny, personazh, False, False):
+                    y += math.sin(vector)
+                    personazh.update()
+    if pygame.key.get_pressed()[pygame.K_a]:
+        vector -= 0.07
+        if vector > 180:
+            vector = -180
+        elif vector < -180:
+            vector = 180
+    if pygame.key.get_pressed()[pygame.K_d]:
+        vector += 0.07
+        if vector > 180:
+            vector = -180
+        elif vector < -180:
+            vector = 180
+    screen.fill('black')
+    pygame.draw.rect(screen, (0, 0, 230), (0, 0, width, height / 2))  # потолок
+    pygame.draw.rect(screen, (50, 50, 50), (0, height / 2, width, height / 2))  # пол
+    rays.update()
+    steny.update()
+    personazh.update()
     clock.tick(fps)
     pygame.display.flip()
 pygame.quit()
