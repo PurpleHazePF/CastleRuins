@@ -57,8 +57,8 @@ class Raycast(pygame.sprite.Sprite):
                 depth_v = (m - self.nach_x) / cos_a
             else:
                 depth_v = m
-            k = self.nach_y + depth_v * sin_a  # находим координаты пересечения с вертикалью
-            if ((m + dm) // BLOCK_SIZE_X * BLOCK_SIZE_X, k // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+            k_vert = self.nach_y + depth_v * sin_a  # находим координаты пересечения с вертикалью
+            if ((m + dm) // BLOCK_SIZE_X * BLOCK_SIZE_X, k_vert // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
                 break  # проверка на пересечение со стеной
             m += dm * BLOCK_SIZE_X  # переходим к седующей вертикали
 
@@ -74,28 +74,38 @@ class Raycast(pygame.sprite.Sprite):
                 depth_h = (k - self.nach_y) / sin_a
             else:
                 depth_h = k
-            m = self.nach_x + depth_h * cos_a  # находим координаты пересечения с горизонталью
-            if (m // BLOCK_SIZE_X * BLOCK_SIZE_X, (k + dk) // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+            m_gorizont = self.nach_x + depth_h * cos_a  # находим координаты пересечения с горизонталью
+            if (m_gorizont // BLOCK_SIZE_X * BLOCK_SIZE_X, (k + dk) // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
                 break  # проверка на пересечение со стеной
             k += dk * BLOCK_SIZE_Y  # переходим к следующей горизонтали
-
         if depth_v < depth_h:  # выбираем из горизонтали и вертикали ближайшую к нам
             depth = depth_v
+            smeshenie = k_vert % BLOCK_SIZE_Y / BLOCK_SIZE_Y  # вычисляем долю смещения по вертикали
         else:
             depth = depth_h
-
+            smeshenie = m_gorizont % BLOCK_SIZE_X / BLOCK_SIZE_X  # вычисляем долю смещения по горизонтали
         depth *= math.cos(vector - cur_angle)  # убираем эффект выпуклости стен
         if depth != 0:
             p_h = PROJ_COEFF / depth  # получаем высоту проекции
         else:
             p_h = 0
-        color1 = Color(255, 255, 255)
-        if p_h <= 255:
-            color1.hsva = (0, 100, int((p_h / 255) * 100), 100)
+        if p_h <= 360:  # вычисляем яркость в зависимости от дальность
+            brightness = p_h
         else:
-            color1.hsva = (0, 100, 100, 100)
-        pygame.draw.rect(screen, color1,
-                         (self.ray * SCALE, height // 2 - p_h // 2, SCALE, p_h))  # отображаем стену
+            brightness = 360
+        cropped = pygame.Surface((SCALE, razmer_image[1]))  # создаем surface для частички изображения
+        if int(smeshenie * razmer_image[0]) + SCALE <= razmer_image[0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
+            cropped.blit(image_stena, (0, 0),
+                         (int(smeshenie * razmer_image[0]), 0, SCALE,
+                          razmer_image[1]))  # размещаем часть изображения на surface
+        else:
+            cropped.blit(image_stena, (0, 0),
+                         (razmer_image[0] - SCALE, 0, SCALE, razmer_image[1]))
+        cropped = pygame.transform.scale(cropped, (SCALE, p_h))  # изменяем размер surface под размер проекции
+        pygame.Surface.set_alpha(cropped, brightness)  # изменяем прозрачность surface
+        pygame.draw.rect(screen, 'black',
+                         (self.ray * SCALE, height // 2 - p_h // 2, SCALE, p_h))  # рисуем черную стену
+        screen.blit(cropped, (self.ray * SCALE, height // 2 - p_h // 2))  # отображаем на стене surface
 
 
 class Persona(pygame.sprite.Sprite):  # для перемещения и отрисовки персонажа
@@ -200,7 +210,7 @@ while running:
                     personazh.update()
     if pygame.mouse.get_focused():
         vector += povorot_vectora * (pygame.mouse.get_pos()[0] - seredina_w)  # прибавляем изменение положения мышки
-        if vector > 180:                                                      # умноженное на чувствительность мышки
+        if vector > 180:  # умноженное на чувствительность мышки
             vector = -180
         elif vector < -180:
             vector = 180
