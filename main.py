@@ -36,7 +36,7 @@ class Raycast(pygame.sprite.Sprite):
         self.nach_x = x + SIZE * 0.5
         self.nach_y = y + SIZE * 0.5
 
-    def update(self):
+    def update(self, cord, spisok_slice, BLOCK_SIZE_X, BLOCK_SIZE_Y, x, y):
         self.nach_x = x + SIZE * 0.5
         self.nach_y = y + SIZE * 0.5
         cur_angle = vector - OBZOR / 2 + DELTA_ANGLE * self.ray  # откладывем нужный угол
@@ -58,7 +58,7 @@ class Raycast(pygame.sprite.Sprite):
             else:
                 depth_v = m
             k_vert = self.nach_y + depth_v * sin_a  # находим координаты пересечения с вертикалью
-            if ((m + dm) // BLOCK_SIZE_X * BLOCK_SIZE_X, k_vert // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+            if ((m + dm) // BLOCK_SIZE_X * BLOCK_SIZE_X, k_vert // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in cord:
                 break  # проверка на пересечение со стеной
             m += dm * BLOCK_SIZE_X  # переходим к седующей вертикали
 
@@ -75,37 +75,148 @@ class Raycast(pygame.sprite.Sprite):
             else:
                 depth_h = k
             m_gorizont = self.nach_x + depth_h * cos_a  # находим координаты пересечения с горизонталью
-            if (m_gorizont // BLOCK_SIZE_X * BLOCK_SIZE_X, (k + dk) // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+            if (m_gorizont // BLOCK_SIZE_X * BLOCK_SIZE_X, (k + dk) // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in cord:
                 break  # проверка на пересечение со стеной
             k += dk * BLOCK_SIZE_Y  # переходим к следующей горизонтали
         if depth_v < depth_h:  # выбираем из горизонтали и вертикали ближайшую к нам
             depth = depth_v
             smeshenie = k_vert % BLOCK_SIZE_Y / BLOCK_SIZE_Y  # вычисляем долю смещения по вертикали
+            xx, yy = m, k_vert
         else:
             depth = depth_h
             smeshenie = m_gorizont % BLOCK_SIZE_X / BLOCK_SIZE_X  # вычисляем долю смещения по горизонтали
-        depth *= math.cos(vector - cur_angle)  # убираем эффект выпуклости стен
-        if depth != 0:
-            p_h = PROJ_COEFF / depth  # получаем высоту проекции
-        else:
-            p_h = 0
-        if p_h <= 360:  # вычисляем яркость в зависимости от дальность
-            brightness = p_h
-        else:
-            brightness = 360
-        cropped = pygame.Surface((SCALE, razmer_image[1]))  # создаем surface для частички изображения
-        if int(smeshenie * razmer_image[0]) + SCALE <= razmer_image[0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
-            cropped.blit(image_stena, (0, 0),
-                         (int(smeshenie * razmer_image[0]), 0, SCALE,
-                          razmer_image[1]))  # размещаем часть изображения на surface
-        else:
-            cropped.blit(image_stena, (0, 0),
-                         (razmer_image[0] - SCALE, 0, SCALE, razmer_image[1]))
-        cropped = pygame.transform.scale(cropped, (SCALE, p_h))  # изменяем размер surface под размер проекции
-        pygame.Surface.set_alpha(cropped, brightness)  # изменяем прозрачность surface
-        pygame.draw.rect(screen, 'black',
-                         (self.ray * SCALE, height // 2 - p_h // 2, SCALE, p_h))  # рисуем черную стену
-        screen.blit(cropped, (self.ray * SCALE, height // 2 - p_h // 2))  # отображаем на стене surface
+            xx, yy = m_gorizont, k
+        if 0 < xx < dlina_karty and 0 < yy < shirina_karty:
+            depth *= math.cos(vector - cur_angle)  # убираем эффект выпуклости стен
+            if depth != 0:
+                p_h = PROJ_COEFF / depth  # получаем высоту проекции
+            else:
+                p_h = 0
+            if p_h <= 360:  # вычисляем яркость в зависимости от дальность
+                brightness = p_h
+            else:
+                brightness = 360
+            vozvrash(smeshenie, self.ray, p_h, brightness, xx, yy, depth, spisok_slice)
+
+
+class Raycastprep(pygame.sprite.Sprite):
+    def __init__(self, group, r):
+        super().__init__(group)
+        self.ray = r
+        self.nach_x = x + SIZE * 0.5
+        self.nach_y = y + SIZE * 0.5
+
+    def update(self, cord, spisok_slice, BLOCK_SIZE_X, BLOCK_SIZE_Y, x, y):
+        x1 = x + SIZE * 0.5
+        y1 = y + SIZE * 0.5
+        sin_a = math.sin(vector)
+        cos_a = math.cos(vector)
+        x2, y2 = x1 + 2000 * cos_a, y1 + 2000 * sin_a
+        sin_a_2 = math.sin(vector + OBZOR / 2)
+        cos_a_2 = math.cos(vector + OBZOR / 2)
+        x3, y3 = x1 + 2000 * cos_a_2, y1 + 2000 * sin_a_2
+        sin_a_3 = math.sin(vector - OBZOR / 2)
+        cos_a_3 = math.cos(vector - OBZOR / 2)
+        x4, y4 = x1 + 2000 * cos_a_3, y1 + 2000 * sin_a_3
+        for elem in cord: #правая часть экрана
+            ugol = treug(elem[0], elem[1], x1, y1, x2, y2, x3, y3)
+            if ugol is not None:
+                if ugol < - 1:
+                    ugol = ugol % (math.pi * 2)
+                ugol2 = OBZOR / 2 + ugol
+                ray = int(ugol2 / DELTA_ANGLE)
+                shirina = (ugol2 / OBZOR) * width
+                if abs(ray) < len(spisok_slice):
+                    if (abs(elem[0] - x1) < abs(spisok_slice[ray][4] - x1) and
+                            abs(elem[1] - y1) < abs(spisok_slice[ray][5] - y1)):
+                        if cos_a != 0:
+                            depth_v = (elem[0] - x1) / math.cos(vector + ugol)
+                        else:
+                            depth_v = elem[0]
+                        if sin_a != 0:
+                            depth_h = (elem[1] - y1) / math.sin(vector + ugol)
+                        else:
+                            depth_h = elem[1]
+                        if depth_v < depth_h:
+                            depth = depth_v
+                        else:
+                            depth = depth_h
+                        depth *= math.cos(ugol)
+                        if depth != 0:
+                            p_h = PROJ_COEFF / depth
+                        else:
+                            p_h = 0
+                        dlina = razmer_image_vase[0] / razmer_image_vase[1] * (p_h // 2)
+                        cropped = pygame.Surface((razmer_image_vase[0], razmer_image_vase[1]))
+                        cropped = pygame.Surface.convert_alpha(cropped)
+                        cropped.fill((0, 0, 0, 0))
+                        cropped.blit(image_vase, (0, 0))
+                        cropped = pygame.transform.scale(cropped, (dlina, p_h // 2))
+                        screen.blit(cropped, (shirina - dlina / 2, height // 2))
+        for elem in cord: # левая часть
+            ugol = treug(elem[0], elem[1], x1, y1, x2, y2, x4, y4)
+            if ugol is not None:
+                if ugol > 1:
+                    ugol = -((math.pi * 2) % ugol)
+                ugol2 = OBZOR / 2 + ugol
+                ray = int(ugol2 / DELTA_ANGLE)
+                shirina = (ugol2 / OBZOR) * width
+                if abs(ray) < len(spisok_slice):
+                    if (abs(elem[0] - x1) < abs(spisok_slice[ray][4] - x1) and
+                            abs(elem[1] - y1) < abs(spisok_slice[ray][5] - y1)):
+                        if cos_a != 0:
+                            depth_v = (elem[0] - x1) / math.cos(vector + ugol)
+                        else:
+                            depth_v = elem[0]
+                        if sin_a != 0:
+                            depth_h = (elem[1] - y1) / math.sin(vector + ugol)
+                        else:
+                            depth_h = elem[1]
+                        if depth_v < depth_h:
+                            depth = depth_v
+                        else:
+                            depth = depth_h
+                        depth *= math.cos(ugol)
+                        if depth != 0:
+                            p_h = PROJ_COEFF / depth
+                        else:
+                            p_h = 0
+                        dlina = razmer_image_vase[0] / razmer_image_vase[1] * (p_h // 2)
+                        cropped = pygame.Surface((razmer_image_vase[0], razmer_image_vase[1]))
+                        cropped = pygame.Surface.convert_alpha(cropped)
+                        cropped.fill((0, 0, 0, 0))
+                        cropped.blit(image_vase, (0, 0))
+                        cropped = pygame.transform.scale(cropped, (dlina, p_h // 2))
+                        screen.blit(cropped, (shirina - dlina / 2, height // 2))
+
+
+def treug(x0, y0, x1, y1, x2, y2, x3, y3):
+    if ((x1 - x0) * (y2 - y1) - (x2 - x1) * (y1 - y0) >= 0 and (x2 - x0) * (y3 - y2) - (x3 - x2) * (y2 - y0) >= 0 and
+            (x3 - x0) * (y1 - y3) - (x1 - x3) * (y3 - y0) >= 0):
+        return math.atan2(y0 - y1, x0 - x1) - math.atan2(y2 - y1, x2 - x1)
+    elif ((x1 - x0) * (y2 - y1) - (x2 - x1) * (y1 - y0) <= 0 and (x2 - x0) * (y3 - y2) - (x3 - x2) * (y2 - y0) <= 0 and
+          (x3 - x0) * (y1 - y3) - (x1 - x3) * (y3 - y0) <= 0):
+        return math.atan2(y0 - y1, x0 - x1) - math.atan2(y2 - y1, x2 - x1)
+
+
+def vozvrash(*args):
+    args[-1].append(args[:-1])
+
+
+def obrabot(smeshenie, ray, p_h, brightness):
+    cropped = pygame.Surface((SCALE, razmer_image[1]))  # создаем surface для частички изображения
+    if int(smeshenie * razmer_image[0]) + SCALE <= razmer_image[0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
+        cropped.blit(image_stena, (0, 0),
+                     (int(smeshenie * razmer_image[0]), 0, SCALE,
+                      razmer_image[1]))  # размещаем часть изображения на surface
+    else:
+        cropped.blit(image_stena, (0, 0),
+                     (razmer_image[0] - SCALE, 0, SCALE, razmer_image[1]))
+    cropped = pygame.transform.scale(cropped, (SCALE, p_h))  # изменяем размер surface под размер проекции
+    pygame.Surface.set_alpha(cropped, brightness)  # изменяем прозрачность surface
+    pygame.draw.rect(screen, 'black',
+                     (ray * SCALE, height // 2 - p_h // 2, SCALE, p_h))  # рисуем черную стену
+    screen.blit(cropped, (ray * SCALE, height // 2 - p_h // 2))  # отображаем на стене surface
 
 
 class Persona(pygame.sprite.Sprite):  # для перемещения и отрисовки персонажа
@@ -129,12 +240,17 @@ clock = pygame.time.Clock()
 pygame.display.set_caption("Руины замка")
 running = True
 
+image_vase = pygame.image.load(os.path.join('data', 'vase.png'))
+razmer_image_vase = (image_vase.get_width(), image_vase.get_height())
+
 all_sprites = pygame.sprite.Group()
 rays = pygame.sprite.Group()
+rays_prep = pygame.sprite.Group()
 steny = pygame.sprite.Group()
 sprite = pygame.sprite.Sprite()
 personazh = pygame.sprite.Group()
 sprite.image = l_image("bg1.png")
+image_vase.set_colorkey((0, 0, 0))
 sprite.rect = sprite.image.get_rect()
 all_sprites.add(sprite)
 
@@ -142,6 +258,9 @@ vector = 0
 
 for i in range(NUM_RAYS):  # создаем лучи
     Raycast(rays, i)
+
+for i in range(1):  # создаем лучи
+    Raycastprep(rays_prep, i)
 
 for i, j in map_cord:
     Stena(steny, i, j)  # инициализируем стены
@@ -218,7 +337,11 @@ while running:
     screen.fill('black')
     pygame.draw.rect(screen, (0, 0, 230), (0, 0, width, height / 2))  # потолок
     pygame.draw.rect(screen, (50, 50, 50), (0, height / 2, width, height / 2))  # пол
-    rays.update()
+    vozvrat = []
+    rays.update(map_cord, vozvrat, BLOCK_SIZE_X, BLOCK_SIZE_Y, x, y)
+    for elem in vozvrat:
+        obrabot(elem[0], elem[1], elem[2], elem[3])
+    rays_prep.update(prep_cord, vozvrat, BLOCK_SIZE_X / 2, BLOCK_SIZE_Y / 2, x, y)
     steny.update()
     personazh.update()
     clock.tick(fps)

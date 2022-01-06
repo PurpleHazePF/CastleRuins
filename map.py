@@ -12,6 +12,7 @@ def load_level(filename):
 
 text_map = load_level('text_map.txt')  # example map
 map_cord = set()
+prep_cord = set()
 width, height = 1200, 900
 seredina_w, seredina_h = width * 0.5, height * 0.5
 povorot_vectora = 1 / seredina_w  # чувствительность мышки
@@ -23,3 +24,7 @@ for j, row in enumerate(text_map):
     for i, bloc in enumerate(row):
         if bloc == 'W':
             map_cord.add((i * BLOCK_SIZE_X, j * BLOCK_SIZE_Y))
+dlina_karty, shirina_karty = len(text_map[0]) * BLOCK_SIZE_X, len(text_map) * BLOCK_SIZE_Y
+prep = ((4, 4), (6.5, 5))
+for elem in prep:
+    prep_cord.add((elem[0] * BLOCK_SIZE_X, elem[1] * BLOCK_SIZE_Y))
