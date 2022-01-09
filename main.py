@@ -100,95 +100,62 @@ class Raycast(pygame.sprite.Sprite):
 
 
 class Raycastprep(pygame.sprite.Sprite):
-    def __init__(self, group, r):
+    def __init__(self, group, x, y):
         super().__init__(group)
-        self.ray = r
-        self.nach_x = x + SIZE * 0.5
-        self.nach_y = y + SIZE * 0.5
+        self.xx = x
+        self.yy = y
 
-    def update(self, cord, spisok_slice, x, y):
+    def update(self, vector, x, y):
         x1 = x + SIZE * 0.5
         y1 = y + SIZE * 0.5
         sin_a = math.sin(vector)
         cos_a = math.cos(vector)
-        x2, y2 = x1 + 2000 * cos_a, y1 + 2000 * sin_a
+        x2, y2 = x1 + 2000 * cos_a, y1 + 2000 * sin_a  # откладываем прямую вперёд
         sin_a_2 = math.sin(vector + OBZOR / 2 + 0.25)
         cos_a_2 = math.cos(vector + OBZOR / 2 + 0.25)
-        x3, y3 = x1 + 2000 * cos_a_2, y1 + 2000 * sin_a_2
+        x3, y3 = x1 + 2000 * cos_a_2, y1 + 2000 * sin_a_2  # откладываем прямую вправо
         sin_a_3 = math.sin(vector - OBZOR / 2 - 0.25)
         cos_a_3 = math.cos(vector - OBZOR / 2 - 0.25)
-        x4, y4 = x1 + 2000 * cos_a_3, y1 + 2000 * sin_a_3
-        for elem in cord: #правая часть экрана
-            ugol = treug(elem[0], elem[1], x1, y1, x2, y2, x3, y3)
-            if ugol is not None:
-                if ugol < - 1:
-                    ugol = ugol % (math.pi * 2)
-                ugol2 = OBZOR / 2 + ugol
-                ray = int(ugol2 / DELTA_ANGLE)
-                shirina = (ugol2 / OBZOR) * width
-                if cos_a != 0:
-                    depth_v = (elem[0] - x1) / math.cos(vector + ugol)
-                else:
-                    depth_v = elem[0]
-                if sin_a != 0:
-                    depth_h = (elem[1] - y1) / math.sin(vector + ugol)
-                else:
-                    depth_h = elem[1]
-                if depth_v < depth_h:
-                    depth = depth_v
-                else:
-                    depth = depth_h
-                depth *= math.cos(ugol)
-                if depth != 0:
-                    p_h = PROJ_COEFF / depth
-                else:
-                    p_h = 0
-                dlina = razmer_image_vase[1] / razmer_image_vase[0] * (p_h // 2)
-                ray_2 = int((shirina - dlina / 2) / SCALE)
-                ray_3 = int((shirina + dlina / 2) / SCALE)
-                ray_razn = ray_3 - ray_2
-                for i in range(ray_razn):
-                    if 0 < ray_2 + i < NUM_RAYS:
-                        vozvrash(i / (ray_3 - ray_2), ray_2 + i, p_h, vozvrat_prep)
+        x4, y4 = x1 + 2000 * cos_a_3, y1 + 2000 * sin_a_3  # откладываем прямую влево
+        ugol = treug(self.xx, self.yy, x1, y1, x2, y2, x3, y3)  # угол вправо, если есть
+        ugol1 = treug(self.xx, self.yy, x1, y1, x2, y2, x4, y4)  # угол влево, если есть
+        if ugol is None:
+            if ugol1 is not None:
+                ugol = ugol1
+        if ugol is not None:
+            if ugol < - 1:  # иногда вылетают странные значения, которые убираем с помощью периода арктангенса
+                ugol = ugol % (math.pi * 2)
+            elif ugol > 1:
+                ugol = -((math.pi * 2) % ugol)
+            ugol2 = OBZOR / 2 + ugol  # угол спрайта в нашем обзоре
+            shirina = (ugol2 / OBZOR) * width  # дальность спрайта от левого угла монитора
+            if cos_a != 0:  # взято из стен
+                depth_v = (self.xx - x1) / math.cos(vector + ugol)
+            else:
+                depth_v = self.xx
+            if sin_a != 0:
+                depth_h = (self.yy - y1) / math.sin(vector + ugol)
+            else:
+                depth_h = self.yy
+            if depth_v < depth_h:
+                depth = depth_v
+            else:
+                depth = depth_h
+            depth *= math.cos(ugol)
+            if depth != 0:
+                p_h = PROJ_COEFF / depth
+            else:
+                p_h = 0
+            dlina = razmer_image_vase[1] / razmer_image_vase[0] * (p_h // 2)  # длина проекции спрайта
+            ray_2 = int((shirina - dlina / 2) / SCALE)  # луч падающий на правую левую сторону проекции
+            ray_3 = int((shirina + dlina / 2) / SCALE)  # луч падающий на правую правую сторону проекции
+            ray_razn = ray_3 - ray_2  # количество лучей, заимаемых проекцией
+            for i in range(ray_razn):
+                if 0 < ray_2 + i < NUM_RAYS:
+                    vozvrash(i / (ray_3 - ray_2), ray_2 + i, p_h, vozvrat_prep)
 
 
-        for elem in cord: # левая часть
-            ugol = treug(elem[0], elem[1], x1, y1, x2, y2, x4, y4)
-            if ugol is not None:
-                if ugol > 1:
-                    ugol = -((math.pi * 2) % ugol)
-                ugol2 = OBZOR / 2 + ugol
-                ray = int(ugol2 / DELTA_ANGLE)
-                shirina = (ugol2 / OBZOR) * width
-                if cos_a != 0:
-                    depth_v = (elem[0] - x1) / math.cos(vector + ugol)
-                else:
-                    depth_v = elem[0]
-                if sin_a != 0:
-                    depth_h = (elem[1] - y1) / math.sin(vector + ugol)
-                else:
-                    depth_h = elem[1]
-                if depth_v < depth_h:
-                    depth = depth_v
-                else:
-                    depth = depth_h
-                depth *= math.cos(ugol)
-                if depth != 0:
-                    p_h = PROJ_COEFF / depth
-                else:
-                    p_h = 0
-                dlina = razmer_image_vase[1] / razmer_image_vase[0] * (p_h // 2)
-                ray_2 = int((shirina - dlina / 2) / SCALE)
-                ray_3 = int((shirina + dlina / 2) / SCALE)
-                ray_razn = ray_3 - ray_2
-                for i in range(ray_razn):
-                    if 0 < ray_2 + i < NUM_RAYS:
-                        vozvrash(i / (ray_3 - ray_2), ray_2 + i, p_h, vozvrat_prep)
-
-
-
-
-def treug(x0, y0, x1, y1, x2, y2, x3, y3):
+def treug(x0, y0, x1, y1, x2, y2, x3, y3):  # находится ли спрайт между в треугольнике составленном из точек
     if ((x1 - x0) * (y2 - y1) - (x2 - x1) * (y1 - y0) >= 0 and (x2 - x0) * (y3 - y2) - (x3 - x2) * (y2 - y0) >= 0 and
             (x3 - x0) * (y1 - y3) - (x1 - x3) * (y3 - y0) >= 0):
         return math.atan2(y0 - y1, x0 - x1) - math.atan2(y2 - y1, x2 - x1)
@@ -201,9 +168,10 @@ def vozvrash(*args):
     args[-1].append(args[:-1])
 
 
-def obrabot(smeshenie, ray, p_h, brightness):
+def obrabot(smeshenie, ray, p_h, brightness):  # отрисовка стены
     cropped = pygame.Surface((SCALE, razmer_image[1]))  # создаем surface для частички изображения
-    if int(smeshenie * razmer_image[0]) + SCALE <= razmer_image[0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
+    if int(smeshenie * razmer_image[0]) + SCALE <= razmer_image[
+        0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
         cropped.blit(image_stena, (0, 0),
                      (int(smeshenie * razmer_image[0]), 0, SCALE,
                       razmer_image[1]))  # размещаем часть изображения на surface
@@ -217,11 +185,12 @@ def obrabot(smeshenie, ray, p_h, brightness):
     screen.blit(cropped, (ray * SCALE, height // 2 - p_h // 2))  # отображаем на стене surface
 
 
-def obrabot_prep(smeshenie, ray, p_h):
+def obrabot_prep(smeshenie, ray, p_h):  # отрисовка спрайта
     cropped = pygame.Surface((SCALE, razmer_image_vase[1]))  # создаем surface для частички изображения
     cropped = pygame.Surface.convert_alpha(cropped)
-    cropped.fill((0, 0, 0, 0))
-    if int(smeshenie * razmer_image_vase[0]) + SCALE <= razmer_image_vase[0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
+    cropped.fill((0, 0, 0, 0))  # делаем его прозрачным
+    if int(smeshenie * razmer_image_vase[0]) + SCALE <= razmer_image_vase[
+        0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
         cropped.blit(image_vase, (0, 0),
                      (int(smeshenie * razmer_image_vase[0]), 0, SCALE,
                       razmer_image_vase[1]))  # размещаем часть изображения на surface
@@ -267,8 +236,8 @@ vector = 0
 for i in range(NUM_RAYS):  # создаем лучи
     Raycast(rays, i)
 
-for i in range(1):  # создаем лучи
-    Raycastprep(rays_prep, i)
+for elem in prep_cord:  # создаем лучи
+    Raycastprep(rays_prep, elem[0], elem[1])
 
 for i, j in map_cord:
     Stena(steny, i, j)  # инициализируем стены
@@ -350,10 +319,10 @@ while running:
     for elem in vozvrat:
         obrabot(elem[0], elem[1], elem[2], elem[3])
     vozvrat_prep = []
-    rays_prep.update(prep_cord, vozvrat, x, y)
-    vozvrat_prep = sorted(vozvrat_prep, key=lambda x: x[2])
+    rays_prep.update(vector, x, y)
+    vozvrat_prep = sorted(vozvrat_prep, key=lambda x: x[2])  # сначала обрабатываем дальние лучи
     for elem in vozvrat_prep:
-        if elem[2] >= vozvrat[elem[1]][2]:
+        if elem[2] >= vozvrat[elem[1]][2]:  # если наша проекция больше проекции стены
             obrabot_prep(elem[0], elem[1], elem[2])
     steny.update()
     personazh.update()
