@@ -391,121 +391,146 @@ size = width, height  # задаются в файле map, как и други
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
 pygame.display.set_caption("Руины замка")
-running = True
+menu = True
+running = False
+pygame.display.flip()
+pygame.font.init()
+start_text = pygame.font.SysFont('Bodoni MT Black', 120)
+textsurface = start_text.render('СТАРТ', False, (28, 110, 103))
 all_sprites = pygame.sprite.Group()
-rays = pygame.sprite.Group()
-rays_prep = pygame.sprite.Group()
-steny = pygame.sprite.Group()
-rays_muha = pygame.sprite.Group()
-rays_enemy = pygame.sprite.Group()
 sprite = pygame.sprite.Sprite()
-personazh = pygame.sprite.Group()
-sprite.image = l_image("bg1.png")
-image_vase.set_colorkey((0, 0, 0))
+sprite.image = l_image("zamok.jpg")
 sprite.rect = sprite.image.get_rect()
 all_sprites.add(sprite)
-vector = 0
-for i in range(NUM_RAYS):  # создаем лучи
-    Raycast(rays, i)
-for elem in prep_cord:  # создаем лучи
-    Raycastprep(rays_prep, elem[0], elem[1])
-for i, j in map_cord:
-    Stena(steny, i, j)  # инициализируем стены
-Raycastpet(rays_muha, cord_muha[0], cord_muha[1])
-for i in cord_soldiers:  # создаем врагов
-    Raycastenemy(rays_enemy, i[0], i[1])
-Persona(personazh)  # инициализируем персонажа
-pygame.mouse.set_visible(False)
-speed_count = 0  # счетчик частоты смены кадров в анимации врагов
-num_image = 0  # номер отображаемой картинки в анимации
-while running:
-    speed_count += 1
+all_sprites.draw(screen)
+while menu:
     for event in pygame.event.get():
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:  # теперь выход на кнопке ESCAPE
+            menu = False
             running = False
-    if pygame.key.get_pressed()[pygame.K_w]:
-        for _ in range(speed):  # для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
-            if width - SIZE + 1 > x + math.cos(vector) > 0:
-                x += math.cos(vector)
-                personazh.update()
-                if pygame.sprite.groupcollide(steny, personazh, False,
-                                              False):  # проверка на столкновение с препяnствием
-                    x -= math.cos(vector)
-                    personazh.update()
-            if height - SIZE + 1 > y + math.sin(vector) > 0:
-                y += math.sin(vector)
-                personazh.update()
-                if pygame.sprite.groupcollide(steny, personazh, False, False):
-                    y -= math.sin(vector)
-                    personazh.update()
-    if pygame.key.get_pressed()[pygame.K_s]:
-        for _ in range(speed):
-            if width - SIZE + 1 > x - math.cos(vector) > 0:
-                x -= math.cos(vector)
-                personazh.update()
-                if pygame.sprite.groupcollide(steny, personazh, False, False):
+        if pygame.mouse.get_focused():
+            if 300 < pygame.mouse.get_pos()[0] < 900 and 400 < pygame.mouse.get_pos()[1] < 600:
+                pygame.draw.rect(screen, (84, 98, 111), (300, 400, 600, 200), 30)
+                textsurface = start_text.render('СТАРТ', False, (84, 98, 111))
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    menu = False
+                    running = True
+            else:
+                textsurface = start_text.render('СТАРТ', False, (28, 110, 103))
+                pygame.draw.rect(screen, (28, 110, 103), (300, 400, 600, 200), 30)
+        screen.blit(textsurface, (450, 460))
+    pygame.display.flip()
+if running is True:
+    rays = pygame.sprite.Group()
+    rays_prep = pygame.sprite.Group()
+    steny = pygame.sprite.Group()
+    rays_muha = pygame.sprite.Group()
+    rays_enemy = pygame.sprite.Group()
+    sprite = pygame.sprite.Sprite()
+    personazh = pygame.sprite.Group()
+    image_vase.set_colorkey((0, 0, 0))
+    vector = 0
+    for i in range(NUM_RAYS):  # создаем лучи
+        Raycast(rays, i)
+    for elem in prep_cord:  # создаем лучи
+        Raycastprep(rays_prep, elem[0], elem[1])
+    for i, j in map_cord:
+        Stena(steny, i, j)  # инициализируем стены
+    Raycastpet(rays_muha, cord_muha[0], cord_muha[1])
+    for i in cord_soldiers:  # создаем врагов
+        Raycastenemy(rays_enemy, i[0], i[1])
+    Persona(personazh)  # инициализируем персонажа
+    pygame.mouse.set_visible(False)
+    speed_count = 0  # счетчик частоты смены кадров в анимации врагов
+    num_image = 0  # номер отображаемой картинки в анимации
+    while running:
+        speed_count += 1
+        for event in pygame.event.get():
+            if pygame.key.get_pressed()[pygame.K_ESCAPE]:  # теперь выход на кнопке ESCAPE
+                running = False
+        if pygame.key.get_pressed()[pygame.K_w]:
+            for _ in range(speed):  # для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
+                if width - SIZE + 1 > x + math.cos(vector) > 0:
                     x += math.cos(vector)
                     personazh.update()
-            if height - SIZE + 1 > y - math.sin(vector) > 0:
-                y -= math.sin(vector)
-                personazh.update()
-                if pygame.sprite.groupcollide(steny, personazh, False, False):
+                    if pygame.sprite.groupcollide(steny, personazh, False,
+                                                  False):  # проверка на столкновение с препяnствием
+                        x -= math.cos(vector)
+                        personazh.update()
+                if height - SIZE + 1 > y + math.sin(vector) > 0:
                     y += math.sin(vector)
                     personazh.update()
-    if pygame.key.get_pressed()[pygame.K_a]:
-        for _ in range(speed):
-            if width - SIZE + 1 > x - math.cos(vector + 90) > 0:
-                x -= math.cos(vector + 90)
-                personazh.update()
-                if pygame.sprite.groupcollide(steny, personazh, False, False):
-                    x += math.cos(vector + 90)
+                    if pygame.sprite.groupcollide(steny, personazh, False, False):
+                        y -= math.sin(vector)
+                        personazh.update()
+        if pygame.key.get_pressed()[pygame.K_s]:
+            for _ in range(speed):
+                if width - SIZE + 1 > x - math.cos(vector) > 0:
+                    x -= math.cos(vector)
                     personazh.update()
-            if height - SIZE + 1 > y - math.sin(vector + 90) > 0:
-                y -= math.sin(vector + 90)
-                personazh.update()
-                if pygame.sprite.groupcollide(steny, personazh, False, False):
-                    y += math.sin(vector + 90)
+                    if pygame.sprite.groupcollide(steny, personazh, False, False):
+                        x += math.cos(vector)
+                        personazh.update()
+                if height - SIZE + 1 > y - math.sin(vector) > 0:
+                    y -= math.sin(vector)
                     personazh.update()
-    if pygame.key.get_pressed()[pygame.K_d]:
-        for _ in range(speed):
-            if width - SIZE + 1 > x - math.cos(vector - 90) > 0:
-                x -= math.cos(vector - 90)
-                personazh.update()
-                if pygame.sprite.groupcollide(steny, personazh, False, False):
-                    x += math.cos(vector - 90)
+                    if pygame.sprite.groupcollide(steny, personazh, False, False):
+                        y += math.sin(vector)
+                        personazh.update()
+        if pygame.key.get_pressed()[pygame.K_a]:
+            for _ in range(speed):
+                if width - SIZE + 1 > x - math.cos(vector + 90) > 0:
+                    x -= math.cos(vector + 90)
                     personazh.update()
-            if height - SIZE + 1 > y - math.sin(vector - 90) > 0:
-                y -= math.sin(vector - 90)
-                personazh.update()
-                if pygame.sprite.groupcollide(steny, personazh, False, False):
-                    y += math.sin(vector - 90)
+                    if pygame.sprite.groupcollide(steny, personazh, False, False):
+                        x += math.cos(vector + 90)
+                        personazh.update()
+                if height - SIZE + 1 > y - math.sin(vector + 90) > 0:
+                    y -= math.sin(vector + 90)
                     personazh.update()
-    if pygame.mouse.get_focused():
-        vector += povorot_vectora * (pygame.mouse.get_pos()[0] - seredina_w)  # прибавляем изменение положения мышки
-        if vector > 180:  # умноженное на чувствительность мышки
-            vector = -180
-        elif vector < -180:
-            vector = 180
-    pygame.mouse.set_pos([seredina_w, seredina_h])  # возвращаем мышку обратно в центр
-    screen.fill('black')
-    pygame.draw.rect(screen, (0, 0, 230), (0, 0, width, height / 2))  # потолок
-    pygame.draw.rect(screen, (50, 50, 50), (0, height / 2, width, height / 2))  # пол
-    vozvrat = []
-    rays.update(map_cord, vozvrat, BLOCK_SIZE_X, BLOCK_SIZE_Y, x, y)
-    for elem in vozvrat:
-        obrabot(elem[0], elem[1], elem[2], elem[3])
-    vozvrat_prep = []
-    rays_prep.update(vector, x, y)
-    rays_muha.update(vector, x, y)
-    rays_enemy.update(vector, x, y)
-    vozvrat_prep = sorted(vozvrat_prep, key=lambda x: x[2])  # сначала обрабатываем дальние лучи
-    for elem in vozvrat_prep:
-        if elem[2] >= vozvrat[elem[1]][2]:  # если наша проекция больше проекции стены
-            obrabot_prep(elem[0], elem[1], elem[2], elem[3], elem[4])
-    steny.update()
-    personazh.update()
-    if speed_count % 4 == 0:
-        num_image += 1
-    clock.tick(fps)
-    pygame.display.flip()
+                    if pygame.sprite.groupcollide(steny, personazh, False, False):
+                        y += math.sin(vector + 90)
+                        personazh.update()
+        if pygame.key.get_pressed()[pygame.K_d]:
+            for _ in range(speed):
+                if width - SIZE + 1 > x - math.cos(vector - 90) > 0:
+                    x -= math.cos(vector - 90)
+                    personazh.update()
+                    if pygame.sprite.groupcollide(steny, personazh, False, False):
+                        x += math.cos(vector - 90)
+                        personazh.update()
+                if height - SIZE + 1 > y - math.sin(vector - 90) > 0:
+                    y -= math.sin(vector - 90)
+                    personazh.update()
+                    if pygame.sprite.groupcollide(steny, personazh, False, False):
+                        y += math.sin(vector - 90)
+                        personazh.update()
+        if pygame.mouse.get_focused():
+            vector += povorot_vectora * (pygame.mouse.get_pos()[0] - seredina_w)  # прибавляем изменение положения мышки
+            if vector > 180:  # умноженное на чувствительность мышки
+                vector = -180
+            elif vector < -180:
+                vector = 180
+        pygame.mouse.set_pos([seredina_w, seredina_h])  # возвращаем мышку обратно в центр
+        screen.fill('black')
+        pygame.draw.rect(screen, (0, 0, 230), (0, 0, width, height / 2))  # потолок
+        pygame.draw.rect(screen, (50, 50, 50), (0, height / 2, width, height / 2))  # пол
+        vozvrat = []
+        rays.update(map_cord, vozvrat, BLOCK_SIZE_X, BLOCK_SIZE_Y, x, y)
+        for elem in vozvrat:
+            obrabot(elem[0], elem[1], elem[2], elem[3])
+        vozvrat_prep = []
+        rays_prep.update(vector, x, y)
+        rays_muha.update(vector, x, y)
+        rays_enemy.update(vector, x, y)
+        vozvrat_prep = sorted(vozvrat_prep, key=lambda x: x[2])  # сначала обрабатываем дальние лучи
+        for elem in vozvrat_prep:
+            if elem[2] >= vozvrat[elem[1]][2]:  # если наша проекция больше проекции стены
+                obrabot_prep(elem[0], elem[1], elem[2], elem[3], elem[4])
+        steny.update()
+        personazh.update()
+        if speed_count % 4 == 0:
+            num_image += 1
+        clock.tick(fps)
+        pygame.display.flip()
 pygame.quit()
