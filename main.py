@@ -210,12 +210,20 @@ class Raycastenemy(pygame.sprite.Sprite):
                 dy = self.yy - y
                 if dx > 0:
                     self.xx -= 1
+                    if (self.xx // BLOCK_SIZE_X * BLOCK_SIZE_X, self.yy // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                        self.xx += 1
                 else:
                     self.xx += 1
+                    if (self.xx // BLOCK_SIZE_X * BLOCK_SIZE_X, self.yy // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                        self.xx -= 1
                 if dy > 0:
                     self.yy -= 1
+                    if (self.xx // BLOCK_SIZE_X * BLOCK_SIZE_X, self.yy // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                        self.yy += 1
                 else:
                     self.yy += 1
+                    if (self.xx // BLOCK_SIZE_X * BLOCK_SIZE_X, self.yy // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                        self.yy -= 1
             dlina = soldiers_razmer[num_image % 4][1] / soldiers_razmer[num_image % 4][0] * (
                     p_h // 2)  # длина проекции спрайта
             ray_2 = int((shirina - dlina / 2) / SCALE)  # луч падающий на правую левую сторону проекции
