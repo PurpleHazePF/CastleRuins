@@ -24,6 +24,7 @@ class Stena(pygame.sprite.Sprite):  # для отрисовки стен
         self.rect = pygame.Rect((0, 0, BLOCK_SIZE_X, BLOCK_SIZE_Y))
         self.rect.x = a
         self.rect.y = b
+        self.mask = pygame.mask.from_surface(image_stena)
 
     def update(self):
         pygame.draw.rect(screen, "black",
@@ -156,6 +157,75 @@ class Raycastprep(pygame.sprite.Sprite):
                     vozvrash(i / ray_razn, ray_2 + i, p_h, 'prep', 0, vozvrat_prep)
 
 
+class Raycastenemy(pygame.sprite.Sprite):
+    def __init__(self, group, x, y):
+        super().__init__(group)
+        self.xx = x
+        self.yy = y
+
+    def update(self, vector, x0, y0):
+        x1 = x0 + SIZE * 0.5
+        y1 = y0 + SIZE * 0.5
+        sin_a = math.sin(vector)
+        cos_a = math.cos(vector)
+        x2, y2 = x1 + 2000 * cos_a, y1 + 2000 * sin_a  # откладываем прямую вперёд
+        sin_a_2 = math.sin(vector + OBZOR / 2 + 0.25)
+        cos_a_2 = math.cos(vector + OBZOR / 2 + 0.25)
+        x3, y3 = x1 + 2000 * cos_a_2, y1 + 2000 * sin_a_2  # откладываем прямую вправо
+        sin_a_3 = math.sin(vector - OBZOR / 2 - 0.25)
+        cos_a_3 = math.cos(vector - OBZOR / 2 - 0.25)
+        x4, y4 = x1 + 2000 * cos_a_3, y1 + 2000 * sin_a_3  # откладываем прямую влево
+        ugol = treug(self.xx, self.yy, x1, y1, x2, y2, x3, y3)  # угол вправо, если есть
+        ugol1 = treug(self.xx, self.yy, x1, y1, x2, y2, x4, y4)  # угол влево, если есть
+        if ugol is None:
+            if ugol1 is not None:
+                ugol = ugol1
+        if ugol is not None:
+            if ugol < - 1:  # иногда вылетают странные значения, которые убираем с помощью периода арктангенса
+                ugol = ugol % (math.pi * 2)
+            elif ugol > 1:
+                ugol = -((math.pi * 2) % ugol)
+            ugol2 = OBZOR / 2 + ugol  # угол спрайта в нашем обзоре
+            shirina = (ugol2 / OBZOR) * width  # дальность спрайта от левого угла монитора
+            if cos_a != 0:  # взято из стен
+                depth_v = (self.xx - x1) / math.cos(vector + ugol)
+            else:
+                depth_v = self.xx
+            if sin_a != 0:
+                depth_h = (self.yy - y1) / math.sin(vector + ugol)
+            else:
+                depth_h = self.yy
+            if depth_v < depth_h:
+                depth = depth_v
+            else:
+                depth = depth_h
+            depth *= math.cos(ugol)
+            if depth != 0:
+                p_h = PROJ_COEFF / depth
+            else:
+                p_h = 0
+            if ((self.xx - x) ** 2 + (self.yy - y) ** 2) ** 0.5 > BLOCK_SIZE_X * (
+                    2 ** 0.5):  # враг двигается если расстояние от него до героя меньше диагонали квадрата стены
+                dx = self.xx - x
+                dy = self.yy - y
+                if dx > 0:
+                    self.xx -= 1
+                else:
+                    self.xx += 1
+                if dy > 0:
+                    self.yy -= 1
+                else:
+                    self.yy += 1
+            dlina = soldiers_razmer[num_image % 4][1] / soldiers_razmer[num_image % 4][0] * (
+                    p_h // 2)  # длина проекции спрайта
+            ray_2 = int((shirina - dlina / 2) / SCALE)  # луч падающий на правую левую сторону проекции
+            ray_3 = int((shirina + dlina / 2) / SCALE)  # луч падающий на правую правую сторону проекции
+            ray_razn = ray_3 - ray_2  # количество лучей, заимаемых проекцией
+            for i in range(ray_razn):
+                if 0 < ray_2 + i < NUM_RAYS:
+                    vozvrash(i / ray_razn, ray_2 + i, p_h, 'enemy', 0, vozvrat_prep)
+
+
 class Raycastpet(pygame.sprite.Sprite):
     def __init__(self, group, x, y):
         super().__init__(group)
@@ -260,7 +330,8 @@ def obrabot_prep(smeshenie, ray, p_h, obj, zhuzhanie):  # отрисовка с�
         cropped = pygame.Surface((SCALE, razmer_image_vase[1]))  # создаем surface для частички изображения
         cropped = pygame.Surface.convert_alpha(cropped)
         cropped.fill((0, 0, 0, 0))  # делаем его прозрачным
-        if int(smeshenie * razmer_image_vase[0]) + SCALE <= razmer_image_vase[0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
+        if int(smeshenie * razmer_image_vase[0]) + SCALE <= razmer_image_vase[
+            0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
             cropped.blit(image_vase, (0, 0),
                          (int(smeshenie * razmer_image_vase[0]), 0, SCALE,
                           razmer_image_vase[1]))  # размещаем часть изображения на surface
@@ -273,7 +344,8 @@ def obrabot_prep(smeshenie, ray, p_h, obj, zhuzhanie):  # отрисовка с�
         cropped = pygame.Surface((SCALE, razmer_image_muha[1]))  # создаем surface для частички изображения
         cropped = pygame.Surface.convert_alpha(cropped)
         cropped.fill((0, 0, 0, 0))  # делаем его прозрачным
-        if int(smeshenie * razmer_image_muha[0]) + SCALE <= razmer_image_muha[0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
+        if int(smeshenie * razmer_image_muha[0]) + SCALE <= razmer_image_muha[
+            0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
             cropped.blit(image_muha, (0, 0),
                          (int(smeshenie * razmer_image_muha[0]), 0, SCALE,
                           razmer_image_muha[1]))  # размещаем часть изображения на surface
@@ -282,6 +354,22 @@ def obrabot_prep(smeshenie, ray, p_h, obj, zhuzhanie):  # отрисовка с�
                          (razmer_image_muha[0] - SCALE, 0, SCALE, razmer_image_muha[1]))
         cropped = pygame.transform.scale(cropped, (SCALE, p_h // 10))  # изменяем размер surface под размер проекции
         screen.blit(cropped, (ray * SCALE, height // 2 - zhuzhanie))
+    elif obj == 'enemy':
+        im = soldiers_im[num_image % 4]
+        razmer_im = soldiers_razmer[num_image % 4]
+        cropped = pygame.Surface((SCALE, razmer_im[1]))  # создаем surface для частички изображения
+        cropped = pygame.Surface.convert_alpha(cropped)
+        cropped.fill((0, 0, 0, 0))  # делаем его прозрачным
+        if int(smeshenie * razmer_im[0]) + SCALE <= razmer_im[
+            0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
+            cropped.blit(im, (0, 0),
+                         (int(smeshenie * razmer_im[0]), 0, SCALE,
+                          razmer_im[1]))  # размещаем часть изображения на surface
+        else:
+            cropped.blit(im, (0, 0),
+                         (razmer_im[0] - SCALE, 0, SCALE, razmer_im[1]))
+        cropped = pygame.transform.scale(cropped, (SCALE, p_h // 2))  # изменяем размер surface под размер проекции
+        screen.blit(cropped, (ray * SCALE, height // 2))
 
 
 class Persona(pygame.sprite.Sprite):  # для перемещения и отрисовки персонажа
@@ -309,6 +397,7 @@ rays = pygame.sprite.Group()
 rays_prep = pygame.sprite.Group()
 steny = pygame.sprite.Group()
 rays_muha = pygame.sprite.Group()
+rays_enemy = pygame.sprite.Group()
 sprite = pygame.sprite.Sprite()
 personazh = pygame.sprite.Group()
 sprite.image = l_image("bg1.png")
@@ -323,9 +412,14 @@ for elem in prep_cord:  # создаем лучи
 for i, j in map_cord:
     Stena(steny, i, j)  # инициализируем стены
 Raycastpet(rays_muha, cord_muha[0], cord_muha[1])
+for i in cord_soldiers:  # создаем врагов
+    Raycastenemy(rays_enemy, i[0], i[1])
 Persona(personazh)  # инициализируем персонажа
 pygame.mouse.set_visible(False)
+speed_count = 0  # счетчик частоты смены кадров в анимации врагов
+num_image = 0  # номер отображаемой картинки в анимации
 while running:
+    speed_count += 1
     for event in pygame.event.get():
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:  # теперь выход на кнопке ESCAPE
             running = False
@@ -403,12 +497,15 @@ while running:
     vozvrat_prep = []
     rays_prep.update(vector, x, y)
     rays_muha.update(vector, x, y)
+    rays_enemy.update(vector, x, y)
     vozvrat_prep = sorted(vozvrat_prep, key=lambda x: x[2])  # сначала обрабатываем дальние лучи
     for elem in vozvrat_prep:
         if elem[2] >= vozvrat[elem[1]][2]:  # если наша проекция больше проекции стены
             obrabot_prep(elem[0], elem[1], elem[2], elem[3], elem[4])
     steny.update()
     personazh.update()
+    if speed_count % 4 == 0:
+        num_image += 1
     clock.tick(fps)
     pygame.display.flip()
 pygame.quit()

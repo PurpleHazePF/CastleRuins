@@ -1,8 +1,14 @@
-WWWWWWWWW
-W.......W
-W.W.W.W.W
-W.......W
-W.......W
-W...W...W
-W.......W
-WWWWWWWWW
+WWWWWWWWWWWWWWWWWW
+W    W   W   W   W
+W                W
+W                W
+W    W  W   W    W
+W                W
+W             W  W
+W     W    W     W
+W    W    W      W
+W   W   W        W
+W        W    W  W
+W    W      W    W
+W                W
+WWWWWWWWWWWWWWWWWW

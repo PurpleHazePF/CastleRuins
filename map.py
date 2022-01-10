@@ -25,6 +25,21 @@ image_vase = pygame.image.load(os.path.join('data', 'vase.png'))
 razmer_image_vase = (image_vase.get_width(), image_vase.get_height())
 image_muha = pygame.image.load(os.path.join('data', 'muha.png'))
 razmer_image_muha = (image_muha.get_width(), image_muha.get_height())
+image_solder0 = pygame.transform.scale(pygame.image.load(os.path.join('data/anim_soldier', '0.png')),
+                                       (BLOCK_SIZE_X, BLOCK_SIZE_Y))
+image_solder1 = pygame.transform.scale(pygame.image.load(os.path.join('data/anim_soldier', '1.png')),
+                                       (BLOCK_SIZE_X, BLOCK_SIZE_Y))
+image_solder2 = pygame.transform.scale(pygame.image.load(os.path.join('data/anim_soldier', '2.png')),
+                                       (BLOCK_SIZE_X, BLOCK_SIZE_Y))
+image_solder3 = pygame.transform.scale(pygame.image.load(os.path.join('data/anim_soldier', '3.png')),
+                                       (BLOCK_SIZE_X, BLOCK_SIZE_Y))
+razmer_image_0 = (image_solder0.get_width(), image_solder0.get_height())
+razmer_image_1 = (image_solder1.get_width(), image_solder1.get_height())
+razmer_image_2 = (image_solder2.get_width(), image_solder2.get_height())
+razmer_image_3 = (image_solder3.get_width(), image_solder3.get_height())
+soldiers_im = [image_solder0, image_solder1, image_solder2, image_solder3]
+soldiers_razmer = [razmer_image_0, razmer_image_1, razmer_image_2, razmer_image_3]
+cord_soldiers = [(5.5 * BLOCK_SIZE_X, 5.5 * BLOCK_SIZE_Y), (7 * BLOCK_SIZE_X, 7 * BLOCK_SIZE_Y)]
 for j, row in enumerate(text_map):
     for i, bloc in enumerate(row):
         if bloc == 'W':
