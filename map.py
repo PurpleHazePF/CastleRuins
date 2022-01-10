@@ -23,6 +23,8 @@ image_stena = pygame.image.load(os.path.join('data', 'stena_zamshelaya.jfif'))
 razmer_image = (image_stena.get_width(), image_stena.get_height())
 image_vase = pygame.image.load(os.path.join('data', 'vase.png'))
 razmer_image_vase = (image_vase.get_width(), image_vase.get_height())
+image_muha = pygame.image.load(os.path.join('data', 'muha.png'))
+razmer_image_muha = (image_muha.get_width(), image_muha.get_height())
 for j, row in enumerate(text_map):
     for i, bloc in enumerate(row):
         if bloc == 'W':
@@ -31,3 +33,4 @@ dlina_karty, shirina_karty = len(text_map[0]) * BLOCK_SIZE_X, len(text_map) * BL
 prep = ((4, 4), (6.5, 5))
 for elem in prep:
     prep_cord.add((elem[0] * BLOCK_SIZE_X, elem[1] * BLOCK_SIZE_Y))
+cord_muha = (420, 320)
