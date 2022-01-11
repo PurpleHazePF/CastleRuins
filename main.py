@@ -104,6 +104,7 @@ class Raycastbullet(pygame.sprite.Sprite):
         self.rect = pygame.Rect((x + SIZE * 0.5 + math.cos(vect) * 3, y + SIZE * 0.5 + math.sin(vect) * 3, 10, 10))
         self.vect = vect
         vystrel_bullet.play()
+        pygame.sprite.groupcollide(rays_bullet, steny, True, False)
 
     def update(self):
         self.rect.x = self.rect.x + speed * 2 * math.cos(self.vect)
@@ -165,6 +166,7 @@ class Raycast_hero_bullet(pygame.sprite.Sprite):
         self.rect = pygame.Rect((x + SIZE * 0.5 + math.cos(vect) * 3, y + SIZE * 0.5 + math.sin(vect) * 3, 10, 10))
         self.vect = vect
         vystrel_bullet.play()
+        pygame.sprite.groupcollide(rays_hero_bullet, steny, True, False)
 
     def update(self):
         self.rect.x = self.rect.x + speed * 2 * math.cos(self.vect)
@@ -355,7 +357,7 @@ class Raycastenemy(pygame.sprite.Sprite):
                     vozvrash(i / ray_razn, ray_2 + i, p_h, 'enemy', 0, vozvrat_prep)
 
     def vystrel(self):
-        ugol = math.atan2(y - self.rect.y, x - self.rect.x) - math.atan2(400 - self.rect.y, 900 - self.rect.x)
+        ugol = math.atan2(y - self.rect.y, x - self.rect.x) - math.atan2(nach_y - self.rect.y, width - self.rect.x)
         Raycastbullet(rays_bullet, self.rect.x + math.cos(ugol) * 5, self.rect.y + math.sin(ugol) * 5, ugol)
 
 

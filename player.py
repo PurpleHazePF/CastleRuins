@@ -5,6 +5,7 @@ x, y = 400, 300
 vector = 0
 speed = 10
 fps = 30
+nach_y = 300
 dlina_vzglyada = (40, 40)
 
 OBZOR = math.pi / 3
