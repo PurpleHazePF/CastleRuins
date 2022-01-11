@@ -105,6 +105,7 @@ class Raycastbullet(pygame.sprite.Sprite):
         self.rect = pygame.Rect((x + SIZE * 0.5 + math.cos(vect) * 3, y + SIZE * 0.5 + math.sin(vect) * 3, 10, 10))
         self.vect = vect
         vystrel_bullet.play()
+        pygame.sprite.groupcollide(rays_bullet, steny, True, False)
 
     def update(self):
         self.rect.x = self.rect.x + speed * 2 * math.cos(self.vect)
@@ -166,6 +167,7 @@ class Raycast_hero_bullet(pygame.sprite.Sprite):
         self.rect = pygame.Rect((x + SIZE * 0.5 + math.cos(vect) * 3, y + SIZE * 0.5 + math.sin(vect) * 3, 10, 10))
         self.vect = vect
         vystrel_bullet.play()
+        pygame.sprite.groupcollide(rays_hero_bullet, steny, True, False)
 
     def update(self):
         self.rect.x = self.rect.x + speed * 2 * math.cos(self.vect)
@@ -356,7 +358,7 @@ class Raycastenemy(pygame.sprite.Sprite):
                     vozvrash(i / ray_razn, ray_2 + i, p_h, 'enemy', 0, vozvrat_prep)
 
     def vystrel(self):
-        ugol = math.atan2(y - self.rect.y, x - self.rect.x) - math.atan2(400 - self.rect.y, 900 - self.rect.x)
+        ugol = math.atan2(y - self.rect.y, x - self.rect.x) - math.atan2(nach_y - self.rect.y, width - self.rect.x)
         Raycastbullet(rays_bullet, self.rect.x + math.cos(ugol) * 5, self.rect.y + math.sin(ugol) * 5, ugol)
 
 
@@ -696,6 +698,15 @@ if running is True:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if pygame.mouse.get_focused():
                     Raycast_hero_bullet(rays_hero_bullet, x, y, vector)
+        if pygame.key.get_pressed()[pygame.K_q]:
+            map_cord = set()
+            for j, row in enumerate(text_map2):
+                for i, bloc in enumerate(row):
+                    if bloc == 'W':
+                        map_cord.add((i * BLOCK_SIZE_X, j * BLOCK_SIZE_Y))
+            steny = pygame.sprite.Group()
+            for i, j in map_cord:
+                Stena(steny, i, j)
         if pygame.key.get_pressed()[pygame.K_w]:
             for _ in range(speed):  # для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
                 if width - SIZE + 1 > x + math.cos(vector) > 0:
