@@ -554,27 +554,28 @@ if running is True:
         speed_count += 1
         for event in pygame.event.get():
             if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+                pygame.mixer.music.pause()
                 pygame.mouse.set_visible(True)
                 pauseMenu = True
-            while pauseMenu:
                 pauseWindow.draw(screen)
-                all_sprites.draw(screen)
                 pygame.display.flip()
-                for eIr in pygame.event.get():
-                    if eIr.type == pygame.QUIT:
-                        pauseMenu = False
-                        running = False
-                    if pygame.key.get_pressed()[pygame.K_r]:
-                        pauseMenu = False
-                        pygame.mouse.set_visible(False)
-                    if eIr.type == pygame.MOUSEBUTTONUP:
-                        pos = eIr.pos
-                        if 370 < pos[0] < 850 and 306 < pos[1] < 416:
-                            pauseMenu = False
-                            pygame.mouse.set_visible(False)
-                        if 370 < pos[0] < 850 and 480 < pos[1] < 590:
+                while pauseMenu:
+                    for eIr in pygame.event.get():
+                        if eIr.type == pygame.QUIT:
                             pauseMenu = False
                             running = False
+                        if pygame.key.get_pressed()[pygame.K_r]:
+                            pauseMenu = False
+                            pygame.mouse.set_visible(False)
+                        if eIr.type == pygame.MOUSEBUTTONUP:
+                            pos = eIr.pos
+                            if 370 < pos[0] < 850 and 306 < pos[1] < 416:
+                                pauseMenu = False
+                                pygame.mouse.set_visible(False)
+                                pygame.mixer.music.unpause()
+                            if 370 < pos[0] < 850 and 480 < pos[1] < 590:
+                                pauseMenu = False
+                                running = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if pygame.mouse.get_focused():
                     Raycastbullet(rays_bullet, x, y, vector)
