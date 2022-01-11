@@ -486,6 +486,9 @@ sprite.image = l_image("zamok.jpg")
 sprite.rect = sprite.image.get_rect()
 all_sprites.add(sprite)
 all_sprites.draw(screen)
+enemy_dead = pygame.mixer.Sound('assets/enemy_dead.wav')
+pygame.mixer.music.load('assets/fon_music.mp3')
+pygame.mixer.music.play(-1)
 while menu:
     for event in pygame.event.get():
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:  # теперь выход на кнопке ESCAPE
@@ -610,7 +613,8 @@ if running is True:
         pygame.draw.rect(screen, (50, 50, 50), (0, height / 2, width, height / 2))  # пол
         vozvrat = []
         pygame.sprite.groupcollide(rays_bullet, steny, True, False)
-        pygame.sprite.groupcollide(rays_bullet, rays_enemy, True, True)
+        if any(pygame.sprite.groupcollide(rays_bullet, rays_enemy, True, True)):
+            enemy_dead.play()
         rays.update(map_cord, vozvrat, BLOCK_SIZE_X, BLOCK_SIZE_Y, x, y)
         for elem in vozvrat:
             obrabot(elem[0], elem[1], elem[2], elem[3])
@@ -625,7 +629,7 @@ if running is True:
                 obrabot_prep(elem[0], elem[1], elem[2], elem[3], elem[4])
         steny.update()
         personazh.update()
-        if speed_count % 4 == 0:
+        if speed_count % 10 == 0:
             num_image += 1
         all_sprites.draw(screen)
         clock.tick(fps)
