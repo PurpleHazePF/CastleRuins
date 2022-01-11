@@ -3,10 +3,10 @@ import os
 import pygame
 import sys
 from pygame import Color
+from random import randint
 
 from map import *
 from player import *
-from random import randint
 
 
 def l_image(name):
@@ -103,6 +103,7 @@ class Raycastbullet(pygame.sprite.Sprite):
         super().__init__(group)
         self.rect = pygame.Rect((x + SIZE * 0.5 + math.cos(vect) * 3, y + SIZE * 0.5 + math.sin(vect) * 3, 10, 10))
         self.vect = vect
+        vystrel_bullet.play()
 
     def update(self):
         self.rect.x = self.rect.x + speed * 2 * math.cos(self.vect)
@@ -493,6 +494,7 @@ sprite.rect = sprite.image.get_rect()
 all_sprites.add(sprite)
 all_sprites.draw(screen)
 enemy_dead = pygame.mixer.Sound('data/enemy_dead.wav')
+vystrel_bullet = pygame.mixer.Sound('data/vystrel.mp3')
 pygame.mixer.music.load('data/fon_music.mp3')
 pygame.mixer.music.play(-1)
 pauseWindow = pygame.sprite.Group()
@@ -676,7 +678,7 @@ if running is True:
             num_image += 1
         all_sprites.draw(screen)
         drawTextbars(screen, "Осталось врагов: " + str(mobs), 0, 100)
-        drawTextbars(screen, "Points: " + str(points), 0, 150)
+        drawTextbars(screen, "Очки: " + str(points), 0, 150)
         clock.tick(fps)
         pygame.display.flip()
 pygame.quit()
