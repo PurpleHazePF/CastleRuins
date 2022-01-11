@@ -32,6 +32,7 @@ image_muha = pygame.image.load(os.path.join('data', 'muha.png'))
 razmer_image_muha = (image_muha.get_width(), image_muha.get_height())
 image_bullet = pygame.image.load(os.path.join('data', 'bullet.png'))
 razmer_image_bullet = (image_bullet.get_width(), image_bullet.get_height())
+zamok_image = pygame.image.load(os.path.join('assets', 'end_zamok.jpg'))
 image_solder0 = pygame.transform.scale(pygame.image.load(os.path.join('data/anim_soldier', '0.png')),
                                        (BLOCK_SIZE_X, BLOCK_SIZE_Y))
 image_solder1 = pygame.transform.scale(pygame.image.load(os.path.join('data/anim_soldier', '1.png')),

@@ -4,6 +4,7 @@ import pygame
 import sys
 from pygame import Color
 from random import randint
+from datetime import datetime
 
 from map import *
 from player import *
@@ -554,9 +555,9 @@ class Persona(pygame.sprite.Sprite):  # для перемещения и отр�
         return True
 
 
-def drawTextbars(screen, txt, x, y, size=45):
+def drawTextbars(screen, txt, x, y, size=45, color=(255, 255, 255)):
     font = pygame.font.Font(None, size)
-    text = font.render(txt, True, (255, 255, 255))
+    text = font.render(txt, True, color)
     screen.blit(text, (x, y))
 
 
@@ -600,6 +601,7 @@ sprite.rect = sprite.image.get_rect()
 all_sprites.add(sprite)
 all_sprites.draw(screen)
 enemy_dead = pygame.mixer.Sound('data/enemy_dead.wav')
+lose_sound = pygame.mixer.Sound('data/lose.mp3')
 vystrel_bullet = pygame.mixer.Sound('data/vystrel.mp3')
 pygame.mixer.music.load('data/fon_music.mp3')
 pygame.mixer.music.play(-1)
@@ -770,9 +772,21 @@ if running is True:
             mobs -= 1
         if any(pygame.sprite.groupcollide(rays_bullet, personazh, True, False)):
             hero.shot()
-            print(hero.hp)
             if not hero.check():
+                pygame.mixer.music.pause()
                 running = False
+                lose_sound.play()
+                screen.blit(zamok_image, (0, 0))
+                drawTextbars(screen, f"Количество набранных очков: {points}", 100, 400, 45, (255, 0, 0))
+                drawTextbars(screen, f"Оставшееся количество врагов: {mobs}", 100, 450, 45, (255, 0, 0))
+                drawTextbars(screen, f"Дата смерти: {datetime.now()}", 100, 500, 45, (255, 0, 0))
+                pygame.display.flip()
+                last_running = True
+                while last_running:
+                    for event in pygame.event.get():
+                        if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+                            last_running = False
+                break
         rays.update(map_cord, vozvrat, BLOCK_SIZE_X, BLOCK_SIZE_Y, x, y)
         for elem in vozvrat:
             obrabot(elem[0], elem[1], elem[2], elem[3])
@@ -796,5 +810,4 @@ if running is True:
         drawHP(screen, f"Жизни: {hero.hp}", 0, 200, hero.hp)
         clock.tick(fps)
         pygame.display.flip()
-
 pygame.quit()
