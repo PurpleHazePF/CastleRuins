@@ -474,7 +474,6 @@ def drawTextbars(screen, txt, x, y, size=45):
     text = font.render(txt, True, (255, 255, 255))
     screen.blit(text, (x, y))
 
-
 pygame.init()
 size = width, height  # задаются в файле map, как и другие свойства карты
 screen = pygame.display.set_mode(size)
@@ -486,6 +485,7 @@ pygame.display.flip()
 pygame.font.init()
 start_text = pygame.font.SysFont('Bodoni MT Black', 120)
 textsurface = start_text.render('СТАРТ', False, (28, 110, 103))
+leave = start_text.render('ВЫХОД', False, (28, 110, 103))
 all_sprites = pygame.sprite.Group()
 sprite = pygame.sprite.Sprite()
 sprite.image = l_image("zamok.jpg")
@@ -518,7 +518,16 @@ while menu:
             else:
                 textsurface = start_text.render('СТАРТ', False, (28, 110, 103))
                 pygame.draw.rect(screen, (28, 110, 103), (300, 400, 600, 200), 30)
+            if 300 < pygame.mouse.get_pos()[0] < 900 and 700 < pygame.mouse.get_pos()[1] < 900:
+                leave = start_text.render('ВЫХОД', False, (84, 98, 111))
+                pygame.draw.rect(screen, (84, 98, 111), (300, 700, 600, 200), 30)
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    menu = False
+            else:
+                leave = start_text.render('ВЫХОД', False, (28, 110, 103))
+                pygame.draw.rect(screen, (28, 110, 103), (300, 700, 600, 200), 30)
         screen.blit(textsurface, (450, 460))
+        screen.blit(leave, (450, 760))
     pygame.display.flip()
 if running is True:
     all_sprites = pygame.sprite.Group()
@@ -564,9 +573,6 @@ if running is True:
                         if eIr.type == pygame.QUIT:
                             pauseMenu = False
                             running = False
-                        if pygame.key.get_pressed()[pygame.K_r]:
-                            pauseMenu = False
-                            pygame.mouse.set_visible(False)
                         if eIr.type == pygame.MOUSEBUTTONUP:
                             pos = eIr.pos
                             if 370 < pos[0] < 850 and 306 < pos[1] < 416:
