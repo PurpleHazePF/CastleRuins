@@ -21,10 +21,7 @@ def l_image(name):
 class Stena(pygame.sprite.Sprite):  # для отрисовки стен
     def __init__(self, group, a, b):
         super().__init__(group)
-        self.rect = pygame.Rect((0, 0, BLOCK_SIZE_X, BLOCK_SIZE_Y))
-        self.rect.x = a
-        self.rect.y = b
-        self.mask = pygame.mask.from_surface(image_stena)
+        self.rect = pygame.Rect((a, b, BLOCK_SIZE_X, BLOCK_SIZE_Y))
 
     def update(self):
         pygame.draw.rect(screen, "black",
@@ -101,6 +98,66 @@ class Raycast(pygame.sprite.Sprite):
             vozvrash(smeshenie, self.ray, p_h, brightness, xx, yy, depth, spisok_slice)
 
 
+class Raycastbullet(pygame.sprite.Sprite):
+    def __init__(self, group, x, y, vect):
+        super().__init__(group)
+        self.rect = pygame.Rect((x + SIZE * 0.5, y + SIZE * 0.5, 10, 10))
+        self.vect = vect
+
+    def update(self):
+        self.rect.x = self.rect.x + speed * 2 * math.cos(self.vect)
+        self.rect.y = self.rect.y + speed * 2 * math.sin(self.vect)
+        pygame.draw.circle(screen, 'orange', (self.rect.x * 0.1, self.rect.y * 0.1), 1)
+        x1 = x + SIZE * 0.5
+        y1 = y + SIZE * 0.5
+        sin_a = math.sin(vector)
+        cos_a = math.cos(vector)
+        x2, y2 = x1 + 2000 * cos_a, y1 + 2000 * sin_a  # откладываем прямую вперёд
+        sin_a_2 = math.sin(vector + OBZOR / 2 + 0.25)
+        cos_a_2 = math.cos(vector + OBZOR / 2 + 0.25)
+        x3, y3 = x1 + 2000 * cos_a_2, y1 + 2000 * sin_a_2  # откладываем прямую вправо
+        sin_a_3 = math.sin(vector - OBZOR / 2 - 0.25)
+        cos_a_3 = math.cos(vector - OBZOR / 2 - 0.25)
+        x4, y4 = x1 + 2000 * cos_a_3, y1 + 2000 * sin_a_3  # откладываем прямую влево
+        ugol = treug(self.rect.x, self.rect.y, x1, y1, x2, y2, x3, y3)  # угол вправо, если есть
+        ugol1 = treug(self.rect.x, self.rect.y, x1, y1, x2, y2, x4, y4)  # угол влево, если есть
+        if ugol is None:
+            if ugol1 is not None:
+                ugol = ugol1
+        if ugol is not None:
+            if ugol < - 1:  # иногда вылетают странные значения, которые убираем с помощью периода арктангенса
+                ugol = ugol % (math.pi * 2)
+            elif ugol > 1:
+                ugol = -((math.pi * 2) % ugol)
+            ugol2 = OBZOR / 2 + ugol  # угол спрайта в нашем обзоре
+            shirina = (ugol2 / OBZOR) * width  # дальность спрайта от левого угла монитора
+            if cos_a != 0:  # взято из стен
+                depth_v = (self.rect.x - x1) / math.cos(vector + ugol)
+            else:
+                depth_v = self.rect.x
+            if sin_a != 0:
+                depth_h = (self.rect.y - y1) / math.sin(vector + ugol)
+            else:
+                depth_h = self.rect.y
+            if depth_v < depth_h:
+                depth = depth_v
+            else:
+                depth = depth_h
+            depth *= math.cos(ugol)
+            if depth != 0:
+                p_h = PROJ_COEFF / depth
+            else:
+                p_h = 0
+            dlina = razmer_image_bullet[1] / razmer_image_bullet[0] * (p_h // 10)  # длина проекции спрайта
+            ray_2 = int((shirina - dlina / 2) / SCALE)  # луч падающий на правую левую сторону проекции
+            ray_3 = int((shirina + dlina / 2) / SCALE)  # луч падающий на правую правую сторону проекции
+            ray_razn = ray_3 - ray_2  # количество лучей, заимаемых проекцией
+            zhuzhanie = randint(0, 5)
+            for i in range(ray_razn):
+                if 0 < ray_2 + i < NUM_RAYS:
+                    vozvrash(i / ray_razn, ray_2 + i, p_h, 'bullet', zhuzhanie, vozvrat_prep)
+
+
 class Raycastprep(pygame.sprite.Sprite):
     def __init__(self, group, x, y):
         super().__init__(group)
@@ -160,10 +217,10 @@ class Raycastprep(pygame.sprite.Sprite):
 class Raycastenemy(pygame.sprite.Sprite):
     def __init__(self, group, x, y):
         super().__init__(group)
-        self.xx = x
-        self.yy = y
+        self.rect = pygame.Rect((x, y, SIZE * 3, SIZE * 3))
 
     def update(self, vector, x0, y0):
+        pygame.draw.circle(screen, 'red', (self.rect.x * 0.1, self.rect.y * 0.1), SIZE * 0.5)
         x1 = x0 + SIZE * 0.5
         y1 = y0 + SIZE * 0.5
         sin_a = math.sin(vector)
@@ -175,8 +232,8 @@ class Raycastenemy(pygame.sprite.Sprite):
         sin_a_3 = math.sin(vector - OBZOR / 2 - 0.25)
         cos_a_3 = math.cos(vector - OBZOR / 2 - 0.25)
         x4, y4 = x1 + 2000 * cos_a_3, y1 + 2000 * sin_a_3  # откладываем прямую влево
-        ugol = treug(self.xx, self.yy, x1, y1, x2, y2, x3, y3)  # угол вправо, если есть
-        ugol1 = treug(self.xx, self.yy, x1, y1, x2, y2, x4, y4)  # угол влево, если есть
+        ugol = treug(self.rect.x, self.rect.y, x1, y1, x2, y2, x3, y3)  # угол вправо, если есть
+        ugol1 = treug(self.rect.x, self.rect.y, x1, y1, x2, y2, x4, y4)  # угол влево, если есть
         if ugol is None:
             if ugol1 is not None:
                 ugol = ugol1
@@ -188,13 +245,13 @@ class Raycastenemy(pygame.sprite.Sprite):
             ugol2 = OBZOR / 2 + ugol  # угол спрайта в нашем обзоре
             shirina = (ugol2 / OBZOR) * width  # дальность спрайта от левого угла монитора
             if cos_a != 0:  # взято из стен
-                depth_v = (self.xx - x1) / math.cos(vector + ugol)
+                depth_v = (self.rect.x - x1) / math.cos(vector + ugol)
             else:
-                depth_v = self.xx
+                depth_v = self.rect.x
             if sin_a != 0:
-                depth_h = (self.yy - y1) / math.sin(vector + ugol)
+                depth_h = (self.rect.y - y1) / math.sin(vector + ugol)
             else:
-                depth_h = self.yy
+                depth_h = self.rect.y
             if depth_v < depth_h:
                 depth = depth_v
             else:
@@ -204,26 +261,26 @@ class Raycastenemy(pygame.sprite.Sprite):
                 p_h = PROJ_COEFF / depth
             else:
                 p_h = 0
-            if ((self.xx - x) ** 2 + (self.yy - y) ** 2) ** 0.5 > BLOCK_SIZE_X * (
+            if ((self.rect.x - x) ** 2 + (self.rect.y - y) ** 2) ** 0.5 > BLOCK_SIZE_X * (
                     2 ** 0.5):  # враг двигается если расстояние от него до героя меньше диагонали квадрата стены
-                dx = self.xx - x
-                dy = self.yy - y
+                dx = self.rect.x - x
+                dy = self.rect.y - y
                 if dx > 0:
-                    self.xx -= 1
-                    if (self.xx // BLOCK_SIZE_X * BLOCK_SIZE_X, self.yy // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
-                        self.xx += 1
+                    self.rect.x -= 1
+                    if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                        self.rect.x += 1
                 else:
-                    self.xx += 1
-                    if (self.xx // BLOCK_SIZE_X * BLOCK_SIZE_X, self.yy // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
-                        self.xx -= 1
+                    self.rect.x += 1
+                    if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                        self.rect.x -= 1
                 if dy > 0:
-                    self.yy -= 1
-                    if (self.xx // BLOCK_SIZE_X * BLOCK_SIZE_X, self.yy // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
-                        self.yy += 1
+                    self.rect.y -= 1
+                    if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                        self.rect.y += 1
                 else:
-                    self.yy += 1
-                    if (self.xx // BLOCK_SIZE_X * BLOCK_SIZE_X, self.yy // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
-                        self.yy -= 1
+                    self.rect.y += 1
+                    if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                        self.rect.y -= 1
             dlina = soldiers_razmer[num_image % 4][1] / soldiers_razmer[num_image % 4][0] * (
                     p_h // 2)  # длина проекции спрайта
             ray_2 = int((shirina - dlina / 2) / SCALE)  # луч падающий на правую левую сторону проекции
@@ -362,6 +419,20 @@ def obrabot_prep(smeshenie, ray, p_h, obj, zhuzhanie):  # отрисовка с�
                          (razmer_image_muha[0] - SCALE, 0, SCALE, razmer_image_muha[1]))
         cropped = pygame.transform.scale(cropped, (SCALE, p_h // 10))  # изменяем размер surface под размер проекции
         screen.blit(cropped, (ray * SCALE, height // 2 - zhuzhanie))
+    elif obj == 'bullet':
+        cropped = pygame.Surface((SCALE, razmer_image_bullet[1]))  # создаем surface для частички изображения
+        cropped = pygame.Surface.convert_alpha(cropped)
+        cropped.fill((0, 0, 0, 0))  # делаем его прозрачным
+        if int(smeshenie * razmer_image_bullet[0]) + SCALE <= razmer_image_bullet[
+            0]:  # узнаем не больше ли координаты нужной части картинки самой картинки
+            cropped.blit(image_bullet, (0, 0),
+                         (int(smeshenie * razmer_image_bullet[0]), 0, SCALE,
+                          razmer_image_bullet[1]))  # размещаем часть изображения на surface
+        else:
+            cropped.blit(image_bullet, (0, 0),
+                         (razmer_image_bullet[0] - SCALE, 0, SCALE, razmer_image_bullet[1]))
+        cropped = pygame.transform.scale(cropped, (SCALE, p_h // 10))  # изменяем размер surface под размер проекции
+        screen.blit(cropped, (ray * SCALE, height // 2 - zhuzhanie))
     elif obj == 'enemy':
         im = soldiers_im[num_image % 4]
         razmer_im = soldiers_razmer[num_image % 4]
@@ -383,9 +454,7 @@ def obrabot_prep(smeshenie, ray, p_h, obj, zhuzhanie):  # отрисовка с�
 class Persona(pygame.sprite.Sprite):  # для перемещения и отрисовки персонажа
     def __init__(self, group):
         super().__init__(group)
-        self.rect = pygame.Rect((0, 0, SIZE, SIZE))
-        self.rect.x = x
-        self.rect.y = y
+        self.rect = pygame.Rect((x, y, SIZE, SIZE))
 
     def update(self):
         self.rect.x = x
@@ -429,6 +498,11 @@ while menu:
         screen.blit(textsurface, (450, 460))
     pygame.display.flip()
 if running is True:
+    all_sprites = pygame.sprite.Group()
+    sprite = pygame.sprite.Sprite()
+    sprite.image = pygame.image.load(os.path.join('data', 'gun.png'))
+    sprite.rect = sprite.image.get_rect()
+    all_sprites.add(sprite)
     rays = pygame.sprite.Group()
     rays_prep = pygame.sprite.Group()
     steny = pygame.sprite.Group()
@@ -437,7 +511,9 @@ if running is True:
     sprite = pygame.sprite.Sprite()
     personazh = pygame.sprite.Group()
     image_vase.set_colorkey((0, 0, 0))
+    image_bullet.set_colorkey((0, 0, 0))
     vector = 0
+    rays_bullet = pygame.sprite.Group()
     for i in range(NUM_RAYS):  # создаем лучи
         Raycast(rays, i)
     for elem in prep_cord:  # создаем лучи
@@ -456,6 +532,9 @@ if running is True:
         for event in pygame.event.get():
             if pygame.key.get_pressed()[pygame.K_ESCAPE]:  # теперь выход на кнопке ESCAPE
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if pygame.mouse.get_focused():
+                    Raycastbullet(rays_bullet, x, y, vector)
         if pygame.key.get_pressed()[pygame.K_w]:
             for _ in range(speed):  # для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
                 if width - SIZE + 1 > x + math.cos(vector) > 0:
@@ -524,6 +603,8 @@ if running is True:
         pygame.draw.rect(screen, (0, 0, 230), (0, 0, width, height / 2))  # потолок
         pygame.draw.rect(screen, (50, 50, 50), (0, height / 2, width, height / 2))  # пол
         vozvrat = []
+        pygame.sprite.groupcollide(rays_bullet, steny, True, False)
+        pygame.sprite.groupcollide(rays_bullet, rays_enemy, True, True)
         rays.update(map_cord, vozvrat, BLOCK_SIZE_X, BLOCK_SIZE_Y, x, y)
         for elem in vozvrat:
             obrabot(elem[0], elem[1], elem[2], elem[3])
@@ -531,6 +612,7 @@ if running is True:
         rays_prep.update(vector, x, y)
         rays_muha.update(vector, x, y)
         rays_enemy.update(vector, x, y)
+        rays_bullet.update()
         vozvrat_prep = sorted(vozvrat_prep, key=lambda x: x[2])  # сначала обрабатываем дальние лучи
         for elem in vozvrat_prep:
             if elem[2] >= vozvrat[elem[1]][2]:  # если наша проекция больше проекции стены
@@ -539,6 +621,7 @@ if running is True:
         personazh.update()
         if speed_count % 4 == 0:
             num_image += 1
+        all_sprites.draw(screen)
         clock.tick(fps)
         pygame.display.flip()
 pygame.quit()
