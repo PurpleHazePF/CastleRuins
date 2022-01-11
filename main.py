@@ -469,6 +469,12 @@ class Persona(pygame.sprite.Sprite):  # для перемещения и отр�
                                              (self.rect.y + SIZE * 0.5) * 0.1), SIZE * 0.5)
 
 
+def drawTextbars(screen, txt, x, y, size=45):
+    font = pygame.font.Font(None, size)
+    text = font.render(txt, True, (255, 255, 255))
+    screen.blit(text, (x, y))
+
+
 pygame.init()
 size = width, height  # задаются в файле map, как и другие свойства карты
 screen = pygame.display.set_mode(size)
@@ -495,6 +501,8 @@ sprite.image = l_image("pause.png")
 sprite.rect = sprite.image.get_rect()
 pauseWindow.add(sprite)
 pauseMenu = False
+points = 0
+mobs = 2
 while menu:
     for event in pygame.event.get():
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:  # теперь выход на кнопке ESCAPE
@@ -641,6 +649,8 @@ if running is True:
         pygame.sprite.groupcollide(rays_bullet, steny, True, False)
         if any(pygame.sprite.groupcollide(rays_bullet, rays_enemy, True, True)):
             enemy_dead.play()
+            points += 10
+            mobs -= 1
         rays.update(map_cord, vozvrat, BLOCK_SIZE_X, BLOCK_SIZE_Y, x, y)
         for elem in vozvrat:
             obrabot(elem[0], elem[1], elem[2], elem[3])
@@ -658,6 +668,8 @@ if running is True:
         if speed_count % 10 == 0:
             num_image += 1
         all_sprites.draw(screen)
+        drawTextbars(screen, "Осталось врагов: " + str(mobs), 0, 100)
+        drawTextbars(screen, "Points: " + str(points), 0, 150)
         clock.tick(fps)
         pygame.display.flip()
 pygame.quit()
