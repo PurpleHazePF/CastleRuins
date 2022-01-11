@@ -101,7 +101,7 @@ class Raycast(pygame.sprite.Sprite):
 class Raycastbullet(pygame.sprite.Sprite):
     def __init__(self, group, x, y, vect):
         super().__init__(group)
-        self.rect = pygame.Rect((x + SIZE * 0.5, y + SIZE * 0.5, 10, 10))
+        self.rect = pygame.Rect((x + SIZE * 0.5 + math.cos(vect) * 3, y + SIZE * 0.5 + math.sin(vect) * 3, 10, 10))
         self.vect = vect
 
     def update(self):
@@ -220,6 +220,26 @@ class Raycastenemy(pygame.sprite.Sprite):
         self.rect = pygame.Rect((x, y, SIZE * 3, SIZE * 3))
 
     def update(self, vector, x0, y0):
+        if ((self.rect.x - x) ** 2 + (self.rect.y - y) ** 2) ** 0.5 > BLOCK_SIZE_X * (
+                2 ** 0.5):  # враг двигается если расстояние от него до героя меньше диагонали квадрата стены
+            dx = self.rect.x - x
+            dy = self.rect.y - y
+            if dx > 0:
+                self.rect.x -= 1
+                if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                    self.rect.x += 1
+            else:
+                self.rect.x += 1
+                if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                    self.rect.x -= 1
+            if dy > 0:
+                self.rect.y -= 1
+                if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                    self.rect.y += 1
+            else:
+                self.rect.y += 1
+                if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
+                    self.rect.y -= 1
         pygame.draw.circle(screen, 'red', (self.rect.x * 0.1, self.rect.y * 0.1), SIZE * 0.5)
         x1 = x0 + SIZE * 0.5
         y1 = y0 + SIZE * 0.5
@@ -261,34 +281,20 @@ class Raycastenemy(pygame.sprite.Sprite):
                 p_h = PROJ_COEFF / depth
             else:
                 p_h = 0
-            if ((self.rect.x - x) ** 2 + (self.rect.y - y) ** 2) ** 0.5 > BLOCK_SIZE_X * (
-                    2 ** 0.5):  # враг двигается если расстояние от него до героя меньше диагонали квадрата стены
-                dx = self.rect.x - x
-                dy = self.rect.y - y
-                if dx > 0:
-                    self.rect.x -= 1
-                    if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
-                        self.rect.x += 1
-                else:
-                    self.rect.x += 1
-                    if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
-                        self.rect.x -= 1
-                if dy > 0:
-                    self.rect.y -= 1
-                    if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
-                        self.rect.y += 1
-                else:
-                    self.rect.y += 1
-                    if (self.rect.x // BLOCK_SIZE_X * BLOCK_SIZE_X, self.rect.y // BLOCK_SIZE_Y * BLOCK_SIZE_Y) in map_cord:
-                        self.rect.y -= 1
             dlina = soldiers_razmer[num_image % 4][1] / soldiers_razmer[num_image % 4][0] * (
                     p_h // 2)  # длина проекции спрайта
+            if num_image % 4 == 2 or num_image % 4 == 3:
+                self.vystrel()
             ray_2 = int((shirina - dlina / 2) / SCALE)  # луч падающий на правую левую сторону проекции
             ray_3 = int((shirina + dlina / 2) / SCALE)  # луч падающий на правую правую сторону проекции
             ray_razn = ray_3 - ray_2  # количество лучей, заимаемых проекцией
             for i in range(ray_razn):
                 if 0 < ray_2 + i < NUM_RAYS:
                     vozvrash(i / ray_razn, ray_2 + i, p_h, 'enemy', 0, vozvrat_prep)
+
+    def vystrel(self):
+        ugol = math.atan2(y - self.rect.y, x - self.rect.x) - math.atan2(400 - self.rect.y, 900 - self.rect.x)
+        Raycastbullet(rays_bullet, self.rect.x + math.cos(ugol) * 5, self.rect.y + math.sin(ugol) * 5, ugol)
 
 
 class Raycastpet(pygame.sprite.Sprite):
@@ -432,7 +438,7 @@ def obrabot_prep(smeshenie, ray, p_h, obj, zhuzhanie):  # отрисовка с�
             cropped.blit(image_bullet, (0, 0),
                          (razmer_image_bullet[0] - SCALE, 0, SCALE, razmer_image_bullet[1]))
         cropped = pygame.transform.scale(cropped, (SCALE, p_h // 10))  # изменяем размер surface под размер проекции
-        screen.blit(cropped, (ray * SCALE, height // 2 - zhuzhanie))
+        screen.blit(cropped, (ray * SCALE, height // 2 + p_h // 10 - zhuzhanie))
     elif obj == 'enemy':
         im = soldiers_im[num_image % 4]
         razmer_im = soldiers_razmer[num_image % 4]
