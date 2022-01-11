@@ -15,7 +15,8 @@ con = sqlite3.connect(x)
 cur = con.cursor()
 maps = cur.execute("""SELECT ways FROM levelWays""").fetchall()
 con.close()
-text_map = load_level(maps[0][0])  # example map
+text_map = load_level(maps[0][0])
+text_map2 = load_level(maps[1][0])  # example map
 map_cord = set()
 prep_cord = set()
 width, height = 1200, 900
@@ -47,6 +48,7 @@ razmer_image_3 = (image_solder3.get_width(), image_solder3.get_height())
 soldiers_im = [image_solder0, image_solder1, image_solder2, image_solder3]
 soldiers_razmer = [razmer_image_0, razmer_image_1, razmer_image_2, razmer_image_3]
 cord_soldiers = [(5.5 * BLOCK_SIZE_X, 5.5 * BLOCK_SIZE_Y), (7 * BLOCK_SIZE_X, 7 * BLOCK_SIZE_Y)]
+dlina_karty, shirina_karty = len(text_map[0]) * BLOCK_SIZE_X, len(text_map) * BLOCK_SIZE_Y
 for j, row in enumerate(text_map):
     for i, bloc in enumerate(row):
         if bloc == 'W':

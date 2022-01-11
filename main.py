@@ -696,6 +696,15 @@ if running is True:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if pygame.mouse.get_focused():
                     Raycast_hero_bullet(rays_hero_bullet, x, y, vector)
+        if pygame.key.get_pressed()[pygame.K_q]:
+            map_cord = set()
+            for j, row in enumerate(text_map2):
+                for i, bloc in enumerate(row):
+                    if bloc == 'W':
+                        map_cord.add((i * BLOCK_SIZE_X, j * BLOCK_SIZE_Y))
+            steny = pygame.sprite.Group()
+            for i, j in map_cord:
+                Stena(steny, i, j)
         if pygame.key.get_pressed()[pygame.K_w]:
             for _ in range(speed):  # для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
                 if width - SIZE + 1 > x + math.cos(vector) > 0:
