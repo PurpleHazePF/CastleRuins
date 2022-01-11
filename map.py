@@ -1,5 +1,6 @@
 import os
 import pygame
+import sqlite3
 
 
 def load_level(filename):
@@ -9,8 +10,12 @@ def load_level(filename):
         level_map = [line.strip() for line in mapFile]
     return level_map
 
-
-text_map = load_level('text_map.txt')  # example map
+x = "levels.db"
+con = sqlite3.connect(x)
+cur = con.cursor()
+maps = cur.execute("""SELECT ways FROM levelWays""").fetchall()
+con.close()
+text_map = load_level(maps[0][0])  # example map
 map_cord = set()
 prep_cord = set()
 width, height = 1200, 900
