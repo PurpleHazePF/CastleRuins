@@ -486,8 +486,8 @@ sprite.image = l_image("zamok.jpg")
 sprite.rect = sprite.image.get_rect()
 all_sprites.add(sprite)
 all_sprites.draw(screen)
-enemy_dead = pygame.mixer.Sound('assets/enemy_dead.wav')
-pygame.mixer.music.load('assets/fon_music.mp3')
+enemy_dead = pygame.mixer.Sound('data/enemy_dead.wav')
+pygame.mixer.music.load('data/fon_music.mp3')
 pygame.mixer.music.play(-1)
 while menu:
     for event in pygame.event.get():
