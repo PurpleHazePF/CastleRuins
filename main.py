@@ -682,6 +682,12 @@ if running is True:
                 map_number += 1
                 map_cord = set()
                 text_map = load_level(maps[map_number][0])
+                if map_number > 1:
+                    if y - SIZE > 900:
+                        y -= 900
+                cord_soldiers = [(5.5 * BLOCK_SIZE_X, 18 * BLOCK_SIZE_Y), (7 * BLOCK_SIZE_X, 22 * BLOCK_SIZE_Y)]
+                for i in cord_soldiers:  # создаем врагов
+                    Raycastenemy(rays_enemy, i[0], i[1])
                 for j, row in enumerate(text_map):
                     for i, bloc in enumerate(row):
                         if bloc == 'W':
