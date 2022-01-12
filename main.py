@@ -684,7 +684,9 @@ if running is True:
                 text_map = load_level(maps[map_number][0])
                 if map_number > 1:
                     if y - SIZE > 900:
-                        y -= 900
+                        y -= 900 # если ты находишься в нижней зоне карты, то тебя перекидывает вверх
+                    else:
+                        y = 80 #иначе на минимальную точку карты
                 cord_soldiers = [(5.5 * BLOCK_SIZE_X, 18 * BLOCK_SIZE_Y), (7 * BLOCK_SIZE_X, 22 * BLOCK_SIZE_Y)]
                 for i in cord_soldiers:  # создаем врагов
                     Raycastenemy(rays_enemy, i[0], i[1])
