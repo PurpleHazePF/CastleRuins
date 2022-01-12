@@ -833,9 +833,9 @@ if running is True:
         if speed_count % 5 == 0:
             num_image += 1
         all_sprites.draw(screen)
-        drawTextbars(screen, "Осталось врагов: " + str(mobs), 0, 100)
-        drawTextbars(screen, "Очки: " + str(points), 0, 150)
-        drawHP(screen, f"Жизни: {hero.hp}", 0, 200, hero.hp)
+        drawTextbars(screen, "Осталось врагов: " + str(mobs), 130, 0)
+        drawTextbars(screen, "Очки: " + str(points), 130, 50)
+        drawHP(screen, f"Жизни: {hero.hp}", 130, 100, hero.hp)
         clock.tick(fps)
         pygame.display.flip()
 pygame.quit()
