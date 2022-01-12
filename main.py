@@ -134,11 +134,11 @@ class Raycastbullet(pygame.sprite.Sprite):
                 ugol = -((math.pi * 2) % ugol)
             ugol2 = OBZOR / 2 + ugol  # угол спрайта в нашем обзоре
             shirina = (ugol2 / OBZOR) * width  # дальность спрайта от левого угла монитора
-            if cos_a != 0:  # взято из стен
+            if math.cos(vector + ugol) != 0:  # взято из стен
                 depth_v = (self.rect.x - x1) / math.cos(vector + ugol)
             else:
                 depth_v = self.rect.x
-            if sin_a != 0:
+            if math.sin(vector + ugol) != 0:
                 depth_h = (self.rect.y - y1) / math.sin(vector + ugol)
             else:
                 depth_h = self.rect.y
@@ -196,11 +196,11 @@ class Raycast_hero_bullet(pygame.sprite.Sprite):
                 ugol = -((math.pi * 2) % ugol)
             ugol2 = OBZOR / 2 + ugol  # угол спрайта в нашем обзоре
             shirina = (ugol2 / OBZOR) * width  # дальность спрайта от левого угла монитора
-            if cos_a != 0:  # взято из стен
+            if math.cos(vector + ugol) != 0:  # взято из стен
                 depth_v = (self.rect.x - x1) / math.cos(vector + ugol)
             else:
                 depth_v = self.rect.x
-            if sin_a != 0:
+            if math.sin(vector + ugol) != 0:
                 depth_h = (self.rect.y - y1) / math.sin(vector + ugol)
             else:
                 depth_h = self.rect.y
@@ -253,11 +253,11 @@ class Raycastprep(pygame.sprite.Sprite):
                 ugol = -((math.pi * 2) % ugol)
             ugol2 = OBZOR / 2 + ugol  # угол спрайта в нашем обзоре
             shirina = (ugol2 / OBZOR) * width  # дальность спрайта от левого угла монитора
-            if cos_a != 0:  # взято из стен
+            if math.cos(vector + ugol) != 0:  # взято из стен
                 depth_v = (self.xx - x1) / math.cos(vector + ugol)
             else:
                 depth_v = self.xx
-            if sin_a != 0:
+            if math.sin(vector + ugol) != 0:
                 depth_h = (self.yy - y1) / math.sin(vector + ugol)
             else:
                 depth_h = self.yy
@@ -331,11 +331,11 @@ class Raycastenemy(pygame.sprite.Sprite):
                 ugol = -((math.pi * 2) % ugol)
             ugol2 = OBZOR / 2 + ugol  # угол спрайта в нашем обзоре
             shirina = (ugol2 / OBZOR) * width  # дальность спрайта от левого угла монитора
-            if cos_a != 0:  # взято из стен
+            if math.cos(vector + ugol) != 0:  # взято из стен
                 depth_v = (self.rect.x - x1) / math.cos(vector + ugol)
             else:
                 depth_v = self.rect.x
-            if sin_a != 0:
+            if math.sin(vector + ugol) != 0:
                 depth_h = (self.rect.y - y1) / math.sin(vector + ugol)
             else:
                 depth_h = self.rect.y
@@ -404,11 +404,11 @@ class Raycastpet(pygame.sprite.Sprite):
                 ugol = -((math.pi * 2) % ugol)
             ugol2 = OBZOR / 2 + ugol  # угол спрайта в нашем обзоре
             shirina = (ugol2 / OBZOR) * width  # дальность спрайта от левого угла монитора
-            if cos_a != 0:  # взято из стен
+            if math.cos(vector + ugol) != 0:  # взято из стен
                 depth_v = (self.xx - x1) / math.cos(vector + ugol)
             else:
                 depth_v = self.xx
-            if sin_a != 0:
+            if math.sin(vector + ugol) != 0:
                 depth_h = (self.yy - y1) / math.sin(vector + ugol)
             else:
                 depth_h = self.yy
