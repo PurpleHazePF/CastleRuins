@@ -641,6 +641,8 @@ while menu:
         screen.blit(textsurface, (450, 460))
         screen.blit(leave, (450, 760))
     pygame.display.flip()
+heightMap = height + 900 #Изменённый размер для поля
+map_number = 0
 if running is True:
     all_sprites = pygame.sprite.Group()
     sprite = pygame.sprite.Sprite()
@@ -675,6 +677,18 @@ if running is True:
     while running:
         speed_count += 1
         for event in pygame.event.get():
+            if mobs == 0:
+                mobs = 2
+                map_number += 1
+                map_cord = set()
+                text_map = load_level(maps[map_number][0])
+                for j, row in enumerate(text_map):
+                    for i, bloc in enumerate(row):
+                        if bloc == 'W':
+                            map_cord.add((i * BLOCK_SIZE_X, j * BLOCK_SIZE_Y))
+                steny = pygame.sprite.Group()
+                for i, j in map_cord:
+                    Stena(steny, i, j)
             if pygame.key.get_pressed()[pygame.K_ESCAPE]:
                 pygame.mixer.music.pause()
                 pygame.mouse.set_visible(True)
@@ -708,7 +722,7 @@ if running is True:
             for i, j in map_cord:
                 Stena(steny, i, j)
         if pygame.key.get_pressed()[pygame.K_w]:
-            for _ in range(speed):  # для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
+            for _ in range(speed):# для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
                 if width - SIZE + 1 > x + math.cos(vector) > 0:
                     x += math.cos(vector)
                     personazh.update()
@@ -716,12 +730,15 @@ if running is True:
                                                   False):  # проверка на столкновение с препядствием
                         x -= math.cos(vector)
                         personazh.update()
-                if height - SIZE + 1 > y + math.sin(vector) > 0:
+                if heightMap - SIZE + 1 > y + math.sin(vector) > 0:
                     y += math.sin(vector)
                     personazh.update()
                     if pygame.sprite.groupcollide(steny, personazh, False, False):
                         y -= math.sin(vector)
                         personazh.update()
+                else:
+                    print(height - SIZE + 1)
+                    print(y)
         if pygame.key.get_pressed()[pygame.K_s]:
             for _ in range(speed):
                 if width - SIZE + 1 > x - math.cos(vector) > 0:
@@ -730,7 +747,7 @@ if running is True:
                     if pygame.sprite.groupcollide(steny, personazh, False, False):
                         x += math.cos(vector)
                         personazh.update()
-                if height - SIZE + 1 > y - math.sin(vector) > 0:
+                if heightMap - SIZE + 1 > y - math.sin(vector) > 0:
                     y -= math.sin(vector)
                     personazh.update()
                     if pygame.sprite.groupcollide(steny, personazh, False, False):
@@ -744,7 +761,7 @@ if running is True:
                     if pygame.sprite.groupcollide(steny, personazh, False, False):
                         x += math.cos(vector + 90)
                         personazh.update()
-                if height - SIZE + 1 > y - math.sin(vector + 90) > 0:
+                if heightMap - SIZE + 1 > y - math.sin(vector + 90) > 0:
                     y -= math.sin(vector + 90)
                     personazh.update()
                     if pygame.sprite.groupcollide(steny, personazh, False, False):
@@ -758,7 +775,7 @@ if running is True:
                     if pygame.sprite.groupcollide(steny, personazh, False, False):
                         x += math.cos(vector - 90)
                         personazh.update()
-                if height - SIZE + 1 > y - math.sin(vector - 90) > 0:
+                if heightMap - SIZE + 1 > y - math.sin(vector - 90) > 0:
                     y -= math.sin(vector - 90)
                     personazh.update()
                     if pygame.sprite.groupcollide(steny, personazh, False, False):
