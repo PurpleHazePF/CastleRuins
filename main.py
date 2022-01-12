@@ -319,6 +319,8 @@ class Raycastenemy(pygame.sprite.Sprite):
         x4, y4 = x1 + 2000 * cos_a_3, y1 + 2000 * sin_a_3  # откладываем прямую влево
         ugol = treug(self.rect.x, self.rect.y, x1, y1, x2, y2, x3, y3)  # угол вправо, если есть
         ugol1 = treug(self.rect.x, self.rect.y, x1, y1, x2, y2, x4, y4)  # угол влево, если есть
+        if num_image % 4 == 2 or num_image % 4 == 3:
+            self.vystrel()
         if ugol is None:
             if ugol1 is not None:
                 ugol = ugol1
@@ -348,8 +350,6 @@ class Raycastenemy(pygame.sprite.Sprite):
                 p_h = 0
             dlina = soldiers_razmer[num_image % 4][1] / soldiers_razmer[num_image % 4][0] * (
                     p_h // 2)  # длина проекции спрайта
-            if num_image % 4 == 2 or num_image % 4 == 3:
-                self.vystrel()
             ray_2 = int((shirina - dlina / 2) / SCALE)  # луч падающий на правую левую сторону проекции
             ray_3 = int((shirina + dlina / 2) / SCALE)  # луч падающий на правую правую сторону проекции
             ray_razn = ray_3 - ray_2  # количество лучей, заимаемых проекцией
