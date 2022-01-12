@@ -358,7 +358,7 @@ class Raycastenemy(pygame.sprite.Sprite):
                     vozvrash(i / ray_razn, ray_2 + i, p_h, 'enemy', 0, vozvrat_prep)
 
     def vystrel(self):
-        ugol = math.atan2(y - self.rect.y, x - self.rect.x) - math.atan2(nach_y - self.rect.y, width - self.rect.x)
+        ugol = math.atan2(y - self.rect.y, x - self.rect.x) - math.atan2(y - self.rect.y, shirina_karty - self.rect.x)
         Raycastbullet(rays_bullet, self.rect.x + math.cos(ugol) * 5, self.rect.y + math.sin(ugol) * 5, ugol)
 
 
@@ -682,6 +682,14 @@ if running is True:
                 map_number += 1
                 map_cord = set()
                 text_map = load_level(maps[map_number][0])
+                if map_number > 1:
+                    if y - SIZE > 900:
+                        y -= 900 # если ты находишься в нижней зоне карты, то тебя перекидывает вверх
+                    else:
+                        y = 80 #иначе на минимальную точку карты
+                cord_soldiers = [(5.5 * BLOCK_SIZE_X, 18 * BLOCK_SIZE_Y), (7 * BLOCK_SIZE_X, 22 * BLOCK_SIZE_Y)]
+                for i in cord_soldiers:  # создаем врагов
+                    Raycastenemy(rays_enemy, i[0], i[1])
                 for j, row in enumerate(text_map):
                     for i, bloc in enumerate(row):
                         if bloc == 'W':
