@@ -358,7 +358,7 @@ class Raycastenemy(pygame.sprite.Sprite):
                     vozvrash(i / ray_razn, ray_2 + i, p_h, 'enemy', 0, vozvrat_prep)
 
     def vystrel(self):
-        ugol = math.atan2(y - self.rect.y, x - self.rect.x) - math.atan2(y - self.rect.y, shirina_karty - self.rect.x)
+        ugol = math.atan2(y - self.rect.y, x - self.rect.x)
         Raycastbullet(rays_bullet, self.rect.x + math.cos(ugol) * 5, self.rect.y + math.sin(ugol) * 5, ugol)
 
 
