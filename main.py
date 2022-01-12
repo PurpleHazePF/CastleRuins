@@ -641,7 +641,7 @@ while menu:
         screen.blit(textsurface, (450, 460))
         screen.blit(leave, (450, 760))
     pygame.display.flip()
-heightMap = height + 900 #Изменённый размер для поля
+heightMap = height + 900  # Изменённый размер для поля
 map_number = 0
 if running is True:
     all_sprites = pygame.sprite.Group()
@@ -673,7 +673,7 @@ if running is True:
     hero = Persona(personazh)  # инициализируем персонажа
     pygame.mouse.set_visible(False)
     speed_count = 0  # счетчик частоты смены кадров в анимации врагов
-    num_image = 0  # номер отображаемой картинки в анимации
+    num_image = 0  # номер отображаемой картинки в анимации врага
     while running:
         speed_count += 1
         for event in pygame.event.get():
@@ -722,7 +722,7 @@ if running is True:
             for i, j in map_cord:
                 Stena(steny, i, j)
         if pygame.key.get_pressed()[pygame.K_w]:
-            for _ in range(speed):# для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
+            for _ in range(speed):  # для более плавного движения, вместо 5 + проверка, 5 раз по 1 и каждый раз проверка
                 if width - SIZE + 1 > x + math.cos(vector) > 0:
                     x += math.cos(vector)
                     personazh.update()
@@ -794,10 +794,11 @@ if running is True:
         vozvrat = []
         pygame.sprite.groupcollide(rays_bullet, steny, True, False)
         pygame.sprite.groupcollide(rays_hero_bullet, steny, True, False)
-        if any(pygame.sprite.groupcollide(rays_hero_bullet, rays_enemy, True, True)):
+        p = len(pygame.sprite.groupcollide(rays_hero_bullet, rays_enemy, True, True))
+        if p != 0:
             enemy_dead.play()
-            points += 10
-            mobs -= 1
+            points += 10 * p
+            mobs -= p
         if any(pygame.sprite.groupcollide(rays_bullet, personazh, True, False)):
             hero.shot()
             if not hero.check():
@@ -807,7 +808,8 @@ if running is True:
                 screen.blit(zamok_image, (0, 0))
                 drawTextbars(screen, f"Количество набранных очков: {points}", 100, 400, 45, (255, 0, 0))
                 drawTextbars(screen, f"Оставшееся количество врагов: {mobs}", 100, 450, 45, (255, 0, 0))
-                drawTextbars(screen, f"Дата смерти: {datetime.now()}", 100, 500, 45, (255, 0, 0))
+                drawTextbars(screen, f'Пройдено уровней: {map_number}', 100, 500, 45, (255, 0, 0))
+                drawTextbars(screen, f"Дата смерти: {datetime.now()}", 100, 550, 45, (255, 0, 0))
                 pygame.display.flip()
                 last_running = True
                 while last_running:
