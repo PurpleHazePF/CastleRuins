@@ -5,9 +5,18 @@ import sys
 from pygame import Color
 from random import randint
 from datetime import datetime
+import time
 
 from map import *
 from player import *
+
+
+def time_convert(n):
+    if n // 60 >= 1:
+        if n // 3600 >= 1:
+            return f'{n // 3600} ч {(n % 3600) // 60} мин {round((n % 3600) % 60)} сек'
+        return f'{n // 60} мин {round(n % 60)} сек'
+    return f'{round(n % 60)} сек'
 
 
 def l_image(name):
@@ -540,7 +549,7 @@ class Persona(pygame.sprite.Sprite):  # для перемещения и отр�
     def __init__(self, group):
         super().__init__(group)
         self.rect = pygame.Rect((x, y, SIZE, SIZE))
-        self.hp = 10
+        self.hp = 1000
 
     def update(self):
         self.rect.x = x
@@ -602,11 +611,13 @@ sprite.image = l_image("zamok.jpg")
 sprite.rect = sprite.image.get_rect()
 all_sprites.add(sprite)
 all_sprites.draw(screen)
+# задаем музыку
 enemy_dead = pygame.mixer.Sound('data/enemy_dead.wav')
 lose_sound = pygame.mixer.Sound('data/lose.mp3')
 vystrel_bullet = pygame.mixer.Sound('data/vystrel.mp3')
 pygame.mixer.music.load('data/fon_music.mp3')
 pygame.mixer.music.play(-1)
+
 pauseWindow = pygame.sprite.Group()
 sprite = pygame.sprite.Sprite()
 sprite.image = l_image("pause.png")
@@ -641,6 +652,8 @@ while menu:
         screen.blit(textsurface, (450, 460))
         screen.blit(leave, (450, 760))
     pygame.display.flip()
+last_running = True
+start_time = time.time()
 heightMap = height + 900  # Изменённый размер для поля
 map_number = 0
 if running is True:
@@ -678,15 +691,18 @@ if running is True:
         speed_count += 1
         for event in pygame.event.get():
             if mobs == 0:
+                if map_number == 2:
+                    running = False
+                    break
                 mobs = 2
                 map_number += 1
                 map_cord = set()
                 text_map = load_level(maps[map_number][0])
                 if map_number > 1:
                     if y - SIZE > 900:
-                        y -= 900 # если ты находишься в нижней зоне карты, то тебя перекидывает вверх
+                        y -= 900  # если ты находишься в нижней зоне карты, то тебя перекидывает вверх
                     else:
-                        y = 80 #иначе на минимальную точку карты
+                        y = 80  # иначе на минимальную точку карты
                 cord_soldiers = [(5.5 * BLOCK_SIZE_X, 18 * BLOCK_SIZE_Y), (7 * BLOCK_SIZE_X, 22 * BLOCK_SIZE_Y)]
                 for i in cord_soldiers:  # создаем врагов
                     Raycastenemy(rays_enemy, i[0], i[1])
@@ -819,7 +835,6 @@ if running is True:
                 drawTextbars(screen, f'Пройдено уровней: {map_number}', 100, 500, 45, (255, 0, 0))
                 drawTextbars(screen, f"Дата смерти: {datetime.now()}", 100, 550, 45, (255, 0, 0))
                 pygame.display.flip()
-                last_running = True
                 while last_running:
                     for event in pygame.event.get():
                         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
@@ -848,4 +863,18 @@ if running is True:
         drawHP(screen, f"Жизни: {hero.hp}", 130, 100, hero.hp)
         clock.tick(fps)
         pygame.display.flip()
+if last_running:
+    pygame.mixer.music.pause()
+    pygame.mixer.music.load('data/win.mp3')
+    pygame.mixer.music.play(-1)
+    screen.blit(win_image, (0, 0))
+    drawTextbars(screen, f"Количество набранных очков: {points}", 100, 400, 45)
+    drawTextbars(screen, f"Убито врагов: {6}", 100, 450, 45)
+    drawTextbars(screen, f'Пройдено уровней: {map_number + 1}', 100, 500, 45)
+    drawTextbars(screen, f"Время прохождения: {time_convert(time.time() - start_time)}", 100, 550, 45)
+    pygame.display.flip()
+    while last_running:
+        for event in pygame.event.get():
+            if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+                last_running = False
 pygame.quit()
