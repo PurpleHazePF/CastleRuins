@@ -14,6 +14,20 @@ x = "levels.db"
 con = sqlite3.connect(x)
 cur = con.cursor()
 maps = cur.execute("""SELECT ways FROM levelWays""").fetchall()
+vofen = cur.execute("""SELECT valueEM FROM levelWays""").fetchall()
+eom = cur.execute("""SELECT cordsEM FROM levelWays""").fetchall()
+enemyCoords = []
+forsp = []
+for i in range(10):
+    a = eom[i][0].split()
+    for j in a:
+        q = j.split("-")
+        forsp.append((float(q[0]), float(q[1])))
+    enemyCoords.append(forsp)
+    forsp = []
+print(vofen)
+print(eom)
+print(enemyCoords)
 con.close()
 text_map = load_level(maps[0][0])
 text_map2 = load_level(maps[2][0])  # example map
