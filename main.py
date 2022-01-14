@@ -691,21 +691,28 @@ if running is True:
         speed_count += 1
         for event in pygame.event.get():
             if mobs == 0:
-                if map_number == 2:
-                    running = False
-                    break
                 mobs = 2
                 map_number += 1
+                print(map_number)
+                if map_number == 10:
+                    running = False
+                    break
                 map_cord = set()
                 text_map = load_level(maps[map_number][0])
                 if map_number > 1:
                     if y - SIZE > 900:
-                        y -= 900  # если ты находишься в нижней зоне карты, то тебя перекидывает вверх
+                        y -= 859  # если ты находишься в нижней зоне карты, то тебя перекидывает вверх
                     else:
                         y = 80  # иначе на минимальную точку карты
-                cord_soldiers = [(5.5 * BLOCK_SIZE_X, 18 * BLOCK_SIZE_Y), (7 * BLOCK_SIZE_X, 22 * BLOCK_SIZE_Y)]
-                for i in cord_soldiers:  # создаем врагов
-                    Raycastenemy(rays_enemy, i[0], i[1])
+                if map_number != 6:
+                    cord_soldiers = [(5.5 * BLOCK_SIZE_X, 18 * BLOCK_SIZE_Y), (7 * BLOCK_SIZE_X, 22 * BLOCK_SIZE_Y)]
+                    for i in cord_soldiers:
+                        Raycastenemy(rays_enemy, i[0], i[1])
+                else:
+                    cord_soldiers = [(5.5 * BLOCK_SIZE_X, 18 * BLOCK_SIZE_Y)]
+                    for i in cord_soldiers:
+                        Raycastenemy(rays_enemy, i[0], i[1])
+                    mobs -= 1
                 for j, row in enumerate(text_map):
                     for i, bloc in enumerate(row):
                         if bloc == 'W':
