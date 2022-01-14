@@ -25,9 +25,6 @@ for i in range(10):
         forsp.append((float(q[0]), float(q[1])))
     enemyCoords.append(forsp)
     forsp = []
-print(vofen)
-print(eom)
-print(enemyCoords)
 con.close()
 text_map = load_level(maps[0][0])
 text_map2 = load_level(maps[2][0])  # example map

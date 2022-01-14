@@ -549,7 +549,7 @@ class Persona(pygame.sprite.Sprite):  # для перемещения и отр�
     def __init__(self, group):
         super().__init__(group)
         self.rect = pygame.Rect((x, y, SIZE, SIZE))
-        self.hp = 1000
+        self.hp = 50
 
     def update(self):
         self.rect.x = x
@@ -598,8 +598,6 @@ size = width, height  # задаются в файле map, как и други
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
 pygame.display.set_caption("Руины замка")
-menu = True
-running = False
 pygame.display.flip()
 pygame.font.init()
 start_text = pygame.font.SysFont('Bodoni MT Black', 120)
@@ -616,16 +614,16 @@ enemy_dead = pygame.mixer.Sound('data/enemy_dead.wav')
 lose_sound = pygame.mixer.Sound('data/lose.mp3')
 vystrel_bullet = pygame.mixer.Sound('data/vystrel.mp3')
 pygame.mixer.music.load('data/fon_music.mp3')
-pygame.mixer.music.play(-1)
 
 pauseWindow = pygame.sprite.Group()
 sprite = pygame.sprite.Sprite()
 sprite.image = l_image("pause.png")
 sprite.rect = sprite.image.get_rect()
 pauseWindow.add(sprite)
-pauseMenu = False
-points = 0
-mobs = 2
+
+menu = True
+running = False
+pygame.mixer.music.play(-1)
 while menu:
     for event in pygame.event.get():
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:  # теперь выход на кнопке ESCAPE
@@ -652,11 +650,17 @@ while menu:
         screen.blit(textsurface, (450, 460))
         screen.blit(leave, (450, 760))
     pygame.display.flip()
-last_running = True
-start_time = time.time()
-heightMap = height + 900  # Изменённый размер для поля
-map_number = 0
-if running is True:
+
+while running:
+    pygame.mixer.music.load('data/fon_music.mp3')
+    pygame.mixer.music.play(-1)
+    pauseMenu = False
+    points = 0
+    mobs = 2
+    last_running = True
+    start_time = time.time()
+    heightMap = height + 900  # Изменённый размер для поля
+    map_number = 0
     all_sprites = pygame.sprite.Group()
     sprite = pygame.sprite.Sprite()
     sprite.image = pygame.image.load(os.path.join('data', 'gun.png'))
@@ -692,9 +696,6 @@ if running is True:
         for event in pygame.event.get():
             if mobs == 0:
                 map_number += 1
-                if map_number == 10:
-                    running = False
-                    break
                 mobs = vofen[map_number][0]
                 map_cord = set()
                 text_map = load_level(maps[map_number][0])
@@ -829,19 +830,44 @@ if running is True:
         if any(pygame.sprite.groupcollide(rays_bullet, personazh, True, False)):
             hero.shot()
             if not hero.check():
+                pygame.mouse.set_visible(True)
                 pygame.mixer.music.pause()
+                pygame.mixer.music.load('data/lose.mp3')
+                pygame.mixer.music.play(-1)
                 running = False
                 lose_sound.play()
-                screen.blit(zamok_image, (0, 0))
-                drawTextbars(screen, f"Количество набранных очков: {points}", 100, 400, 45, (255, 0, 0))
-                drawTextbars(screen, f"Оставшееся количество врагов: {mobs}", 100, 450, 45, (255, 0, 0))
-                drawTextbars(screen, f'Пройдено уровней: {map_number}', 100, 500, 45, (255, 0, 0))
-                drawTextbars(screen, f"Дата смерти: {datetime.now()}", 100, 550, 45, (255, 0, 0))
-                pygame.display.flip()
+                vremya = datetime.now()
                 while last_running:
+                    screen.blit(zamok_image, (0, 0))
+                    drawTextbars(screen, f"Количество набранных очков: {points}", 100, 50, 45, (255, 0, 0))
+                    drawTextbars(screen, f"Оставшееся количество врагов: {mobs}", 100, 100, 45, (255, 0, 0))
+                    drawTextbars(screen, f'Пройдено уровней: {map_number}', 100, 150, 45, (255, 0, 0))
+                    drawTextbars(screen, f"Дата смерти: {vremya}", 100, 200, 45, (255, 0, 0))
                     for event in pygame.event.get():
                         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
                             last_running = False
+                    if 300 < pygame.mouse.get_pos()[0] < 900 and 400 < pygame.mouse.get_pos()[1] < 600:
+                        pygame.draw.rect(screen, (84, 98, 111), (300, 400, 600, 200), 30)
+                        textsurface = start_text.render('ЗАНОВО', False, (84, 98, 111))
+                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                            running = True
+                            last_running = False
+                    else:
+                        textsurface = start_text.render('ЗАНОВО', False, (28, 110, 103))
+                        pygame.draw.rect(screen, (28, 110, 103), (300, 400, 600, 200), 30)
+                    if 300 < pygame.mouse.get_pos()[0] < 900 and 700 < pygame.mouse.get_pos()[1] < 900:
+                        leave = start_text.render('ВЫХОД', False, (84, 98, 111))
+                        pygame.draw.rect(screen, (84, 98, 111), (300, 700, 600, 200), 30)
+                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                            running = False
+                            last_running = False
+                    else:
+                        leave = start_text.render('ВЫХОД', False, (28, 110, 103))
+                        pygame.draw.rect(screen, (28, 110, 103), (300, 700, 600, 200), 30)
+                    screen.blit(textsurface, (450, 460))
+                    screen.blit(leave, (450, 760))
+                    pygame.display.flip()
+                pygame.mixer.pause()
                 break
         rays.update(map_cord, vozvrat, BLOCK_SIZE_X, BLOCK_SIZE_Y, x, y)
         for elem in vozvrat:
@@ -866,18 +892,42 @@ if running is True:
         drawHP(screen, f"Жизни: {hero.hp}", 130, 100, hero.hp)
         clock.tick(fps)
         pygame.display.flip()
-if last_running:
-    pygame.mixer.music.pause()
-    pygame.mixer.music.load('data/win.mp3')
-    pygame.mixer.music.play(-1)
-    screen.blit(win_image, (0, 0))
-    drawTextbars(screen, f"Количество набранных очков: {points}", 100, 400, 45)
-    drawTextbars(screen, f"Убито врагов: {6}", 100, 450, 45)
-    drawTextbars(screen, f'Пройдено уровней: {map_number + 1}', 100, 500, 45)
-    drawTextbars(screen, f"Время прохождения: {time_convert(time.time() - start_time)}", 100, 550, 45)
-    pygame.display.flip()
-    while last_running:
-        for event in pygame.event.get():
-            if pygame.key.get_pressed()[pygame.K_ESCAPE]:
-                last_running = False
+        if map_number == 10 and mobs == 0:
+            pygame.mouse.set_visible(True)
+            pygame.mixer.music.pause()
+            pygame.mixer.music.load('data/win.mp3')
+            pygame.mixer.music.play(-1)
+            while last_running:
+                screen.blit(win_image, (0, 0))
+                drawTextbars(screen, f"Количество набранных очков: {points}", 100, 50, 45)
+                drawTextbars(screen, f"Убито врагов: {points / 10}", 100, 100, 45)
+                drawTextbars(screen, f'Пройдено уровней: {map_number}', 100, 150, 45)
+                drawTextbars(screen, f"Время прохождения: {time_convert(time.time() - start_time)}", 100, 200, 45)
+                for event in pygame.event.get():
+                    if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+                        last_running = False
+                if 300 < pygame.mouse.get_pos()[0] < 900 and 400 < pygame.mouse.get_pos()[1] < 600:
+                    pygame.draw.rect(screen, (84, 98, 111), (300, 400, 600, 200), 30)
+                    textsurface = start_text.render('ЗАНОВО', False, (84, 98, 111))
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        pygame.mixer.music.pause()
+                        running = True
+                        last_running = False
+                else:
+                    textsurface = start_text.render('ЗАНОВО', False, (28, 110, 103))
+                    pygame.draw.rect(screen, (28, 110, 103), (300, 400, 600, 200), 30)
+                if 300 < pygame.mouse.get_pos()[0] < 900 and 700 < pygame.mouse.get_pos()[1] < 900:
+                    leave = start_text.render('ВЫХОД', False, (84, 98, 111))
+                    pygame.draw.rect(screen, (84, 98, 111), (300, 700, 600, 200), 30)
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        running = False
+                        last_running = False
+                else:
+                    leave = start_text.render('ВЫХОД', False, (28, 110, 103))
+                    pygame.draw.rect(screen, (28, 110, 103), (300, 700, 600, 200), 30)
+                screen.blit(textsurface, (450, 460))
+                screen.blit(leave, (450, 760))
+                pygame.display.flip()
+            pygame.mixer.pause()
+            break
 pygame.quit()
