@@ -549,7 +549,7 @@ class Persona(pygame.sprite.Sprite):  # для перемещения и отр�
     def __init__(self, group):
         super().__init__(group)
         self.rect = pygame.Rect((x, y, SIZE, SIZE))
-        self.hp = 50
+        self.hp = 5000
 
     def update(self):
         self.rect.x = x
@@ -701,12 +701,13 @@ while running:
                     pygame.mixer.music.pause()
                     pygame.mixer.music.load('data/win.mp3')
                     pygame.mixer.music.play(-1)
+                    win_time = time_convert(time.time() - start_time)
                     while last_running:
                         screen.blit(win_image, (0, 0))
                         drawTextbars(screen, f"Количество набранных очков: {points}", 100, 50, 45)
                         drawTextbars(screen, f"Убито врагов: {points / 10}", 100, 100, 45)
                         drawTextbars(screen, f'Пройдено уровней: {map_number}', 100, 150, 45)
-                        drawTextbars(screen, f"Время прохождения: {time_convert(time.time() - start_time)}", 100, 200,
+                        drawTextbars(screen, f"Время прохождения: {win_time}", 100, 200,
                                      45)
                         for event in pygame.event.get():
                             if pygame.key.get_pressed()[pygame.K_ESCAPE]:
