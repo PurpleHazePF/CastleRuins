@@ -328,7 +328,7 @@ class Raycastenemy(pygame.sprite.Sprite):
         x4, y4 = x1 + 2000 * cos_a_3, y1 + 2000 * sin_a_3  # откладываем прямую влево
         ugol = treug(self.rect.x, self.rect.y, x1, y1, x2, y2, x3, y3)  # угол вправо, если есть
         ugol1 = treug(self.rect.x, self.rect.y, x1, y1, x2, y2, x4, y4)  # угол влево, если есть
-        if num_image % 4 == 2 or num_image % 4 == 3:
+        if num_image % 4 == 2 and ((self.rect.x - x) ** 2 + (self.rect.y - y) ** 2) ** 0.5 < BLOCK_SIZE_X * 7:
             self.vystrel()
         if ugol is None:
             if ugol1 is not None:
@@ -881,7 +881,7 @@ while running:
                     screen.blit(zamok_image, (0, 0))
                     drawTextbars(screen, f"Количество набранных очков: {points}", 100, 50, 45, (255, 0, 0))
                     drawTextbars(screen, f"Оставшееся количество врагов: {mobs}", 100, 100, 45, (255, 0, 0))
-                    drawTextbars(screen, f'Пройдено уровней: {map_number}', 100, 150, 45, (255, 0, 0))
+                    drawTextbars(screen, f'Пройдено уровней: {map_number % 10}', 100, 150, 45, (255, 0, 0))
                     drawTextbars(screen, f"Дата смерти: {vremya}", 100, 200, 45, (255, 0, 0))
                     for event in pygame.event.get():
                         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
