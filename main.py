@@ -2,10 +2,10 @@ import math
 import os
 import pygame
 import sys
+import time
+from datetime import datetime
 from pygame import Color
 from random import randint
-from datetime import datetime
-import time
 
 from map import *
 from player import *
@@ -19,12 +19,13 @@ def time_convert(n):
     return f'{round(n % 60)} сек'
 
 
-def l_image(name):
-    fullname = os.path.join('assets', name)
+def l_image(name, papka='assets'):
+    fullname = os.path.join(papka, name)
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
     image = pygame.image.load(fullname)
+    image = pygame.transform.scale(image, (width, height))
     return image
 
 
@@ -549,7 +550,7 @@ class Persona(pygame.sprite.Sprite):  # для перемещения и отр�
     def __init__(self, group):
         super().__init__(group)
         self.rect = pygame.Rect((x, y, SIZE, SIZE))
-        self.hp = 5000
+        self.hp = 5
 
     def update(self):
         self.rect.x = x
@@ -593,9 +594,7 @@ def drawHP(screen, txt, x, y, hp, size=45):
     screen.blit(text, (x, y))
 
 
-pygame.init()
-size = width, height  # задаются в файле map, как и другие свойства карты
-screen = pygame.display.set_mode(size)
+screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 pygame.display.set_caption("Руины замка")
 pygame.display.flip()
@@ -630,25 +629,31 @@ while menu:
             menu = False
             running = False
         if pygame.mouse.get_focused():
-            if 300 < pygame.mouse.get_pos()[0] < 900 and 400 < pygame.mouse.get_pos()[1] < 600:
-                pygame.draw.rect(screen, (84, 98, 111), (300, 400, 600, 200), 30)
+            if (width / 4 < pygame.mouse.get_pos()[0] < width / 1.33
+                    and height / 2.25 < pygame.mouse.get_pos()[1] < height / 1.5):
+                pygame.draw.rect(screen, (84, 98, 111), (width / 4, height / 2.25, width / 1.33 - width / 4,
+                                                         height / 1.5 - height / 2.25), 30)
                 textsurface = start_text.render('СТАРТ', False, (84, 98, 111))
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     menu = False
                     running = True
             else:
                 textsurface = start_text.render('СТАРТ', False, (28, 110, 103))
-                pygame.draw.rect(screen, (28, 110, 103), (300, 400, 600, 200), 30)
-            if 300 < pygame.mouse.get_pos()[0] < 900 and 700 < pygame.mouse.get_pos()[1] < 900:
+                pygame.draw.rect(screen, (28, 110, 103), (width / 4, height / 2.25, width / 1.33 - width / 4,
+                                                          height / 1.5 - height / 2.25), 30)
+            if width / 4 < pygame.mouse.get_pos()[0] < width / 1.33 and height / 1.25 < pygame.mouse.get_pos()[
+                1] < height:
                 leave = start_text.render('ВЫХОД', False, (84, 98, 111))
-                pygame.draw.rect(screen, (84, 98, 111), (300, 700, 600, 200), 30)
+                pygame.draw.rect(screen, (84, 98, 111), (width / 4, height / 1.25,
+                                                         width / 1.33 - width / 4, height * 0.2), 30)
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     menu = False
             else:
                 leave = start_text.render('ВЫХОД', False, (28, 110, 103))
-                pygame.draw.rect(screen, (28, 110, 103), (300, 700, 600, 200), 30)
-        screen.blit(textsurface, (450, 460))
-        screen.blit(leave, (450, 760))
+                pygame.draw.rect(screen, (28, 110, 103), (width / 4, height / 1.25,
+                                                          width / 1.33 - width / 4, height * 0.2), 30)
+        screen.blit(textsurface, (width * 0.4, height / 2))
+        screen.blit(leave, (width * 0.38, height * 0.85))
     pygame.display.flip()
 
 while running:
@@ -663,7 +668,7 @@ while running:
     map_number = 0
     all_sprites = pygame.sprite.Group()
     sprite = pygame.sprite.Sprite()
-    sprite.image = pygame.image.load(os.path.join('data', 'gun.png'))
+    sprite.image = l_image('gun.png', 'data')
     sprite.rect = sprite.image.get_rect()
     all_sprites.add(sprite)
     rays = pygame.sprite.Group()
@@ -712,8 +717,10 @@ while running:
                         for event in pygame.event.get():
                             if pygame.key.get_pressed()[pygame.K_ESCAPE]:
                                 last_running = False
-                        if 300 < pygame.mouse.get_pos()[0] < 900 and 400 < pygame.mouse.get_pos()[1] < 600:
-                            pygame.draw.rect(screen, (84, 98, 111), (300, 400, 600, 200), 30)
+                        if (width / 4 < pygame.mouse.get_pos()[0] < width / 1.33
+                                and height / 2.25 < pygame.mouse.get_pos()[1] < height / 1.5):
+                            pygame.draw.rect(screen, (84, 98, 111), (width / 4, height / 2.25, width / 1.33 - width / 4,
+                                                                     height / 1.5 - height / 2.25), 30)
                             textsurface = start_text.render('ЗАНОВО', False, (84, 98, 111))
                             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                                 pygame.mixer.music.pause()
@@ -721,18 +728,24 @@ while running:
                                 last_running = False
                         else:
                             textsurface = start_text.render('ЗАНОВО', False, (28, 110, 103))
-                            pygame.draw.rect(screen, (28, 110, 103), (300, 400, 600, 200), 30)
-                        if 300 < pygame.mouse.get_pos()[0] < 900 and 700 < pygame.mouse.get_pos()[1] < 900:
+                            pygame.draw.rect(screen, (28, 110, 103),
+                                             (width / 4, height / 2.25, width / 1.33 - width / 4,
+                                              height / 1.5 - height / 2.25), 30)
+                        if (width / 4 < pygame.mouse.get_pos()[0] < width / 1.33 and height / 1.25 < \
+                                pygame.mouse.get_pos()[
+                                    1] < height):
                             leave = start_text.render('ВЫХОД', False, (84, 98, 111))
-                            pygame.draw.rect(screen, (84, 98, 111), (300, 700, 600, 200), 30)
+                            pygame.draw.rect(screen, (84, 98, 111), (width / 4, height / 1.25,
+                                                                     width / 1.33 - width / 4, height * 0.2), 30)
                             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                                 running = False
                                 last_running = False
                         else:
                             leave = start_text.render('ВЫХОД', False, (28, 110, 103))
-                            pygame.draw.rect(screen, (28, 110, 103), (300, 700, 600, 200), 30)
-                        screen.blit(textsurface, (450, 460))
-                        screen.blit(leave, (450, 760))
+                            pygame.draw.rect(screen, (28, 110, 103), (width / 4, height / 1.25,
+                                                                        width / 1.33 - width / 4, height * 0.2), 30)
+                        screen.blit(textsurface, (width * 0.35, height / 2))
+                        screen.blit(leave, (width * 0.38, height * 0.85))
                         pygame.display.flip()
                     pygame.mixer.pause()
                     break
@@ -747,7 +760,7 @@ while running:
                 cord_soldiers = []
                 for i in range(mobs):
                     cord_soldiers.append((enemyCoords[map_number][i][0] * BLOCK_SIZE_X,
-                                            enemyCoords[map_number][i][1] * BLOCK_SIZE_Y))
+                                          enemyCoords[map_number][i][1] * BLOCK_SIZE_Y))
                 for i in cord_soldiers:
                     Raycastenemy(rays_enemy, i[0], i[1])
                 for j, row in enumerate(text_map):
@@ -770,11 +783,11 @@ while running:
                             running = False
                         if eIr.type == pygame.MOUSEBUTTONUP:
                             pos = eIr.pos
-                            if 370 < pos[0] < 850 and 306 < pos[1] < 416:
+                            if width * 0.3 < pos[0] < width * 0.7 and height * 0.34 < pos[1] < height * 0.46:
                                 pauseMenu = False
                                 pygame.mouse.set_visible(False)
                                 pygame.mixer.music.unpause()
-                            if 370 < pos[0] < 850 and 480 < pos[1] < 590:
+                            if width * 0.3 < pos[0] < width * 0.7 and height * 0.53 < pos[1] < height * 0.65:
                                 pauseMenu = False
                                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -886,26 +899,32 @@ while running:
                     for event in pygame.event.get():
                         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
                             last_running = False
-                    if 300 < pygame.mouse.get_pos()[0] < 900 and 400 < pygame.mouse.get_pos()[1] < 600:
-                        pygame.draw.rect(screen, (84, 98, 111), (300, 400, 600, 200), 30)
+                    if (width / 4 < pygame.mouse.get_pos()[0] < width / 1.33
+                            and height / 2.25 < pygame.mouse.get_pos()[1] < height / 1.5):
+                        pygame.draw.rect(screen, (84, 98, 111), (width / 4, height / 2.25, width / 1.33 - width / 4,
+                                                                 height / 1.5 - height / 2.25), 30)
                         textsurface = start_text.render('ЗАНОВО', False, (84, 98, 111))
                         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                             running = True
                             last_running = False
                     else:
                         textsurface = start_text.render('ЗАНОВО', False, (28, 110, 103))
-                        pygame.draw.rect(screen, (28, 110, 103), (300, 400, 600, 200), 30)
-                    if 300 < pygame.mouse.get_pos()[0] < 900 and 700 < pygame.mouse.get_pos()[1] < 900:
+                        pygame.draw.rect(screen, (28, 110, 103), (width / 4, height / 2.25, width / 1.33 - width / 4,
+                                                                  height / 1.5 - height / 2.25), 30)
+                    if width / 4 < pygame.mouse.get_pos()[0] < width / 1.33 and height / 1.25 < pygame.mouse.get_pos()[
+                        1] < height:
                         leave = start_text.render('ВЫХОД', False, (84, 98, 111))
-                        pygame.draw.rect(screen, (84, 98, 111), (300, 700, 600, 200), 30)
+                        pygame.draw.rect(screen, (84, 98, 111), (width / 4, height / 1.25,
+                                                                 width / 1.33 - width / 4, height * 0.2), 30)
                         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                             running = False
                             last_running = False
                     else:
                         leave = start_text.render('ВЫХОД', False, (28, 110, 103))
-                        pygame.draw.rect(screen, (28, 110, 103), (300, 700, 600, 200), 30)
-                    screen.blit(textsurface, (450, 460))
-                    screen.blit(leave, (450, 760))
+                        pygame.draw.rect(screen, (28, 110, 103), (width / 4, height / 1.25,
+                                                                  width / 1.33 - width / 4, height * 0.2), 30)
+                    screen.blit(textsurface, (width * 0.35, height / 2))
+                    screen.blit(leave, (width * 0.38, height * 0.85))
                     pygame.display.flip()
                 pygame.mixer.pause()
                 break

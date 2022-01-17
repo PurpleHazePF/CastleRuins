@@ -10,6 +10,17 @@ def load_level(filename):
         level_map = [line.strip() for line in mapFile]
     return level_map
 
+
+def load_image(name):
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    image = pygame.transform.scale(image, (width, height))
+    return image
+
+
 x = "levels.db"
 con = sqlite3.connect(x)
 cur = con.cursor()
@@ -30,7 +41,8 @@ text_map = load_level(maps[0][0])
 text_map2 = load_level(maps[2][0])  # example map
 map_cord = set()
 prep_cord = set()
-width, height = 1200, 900
+pygame.init()
+width, height = pygame.display.Info().current_w, pygame.display.Info().current_h
 polovina_width, polovina_height = width // 2, height // 2
 seredina_w, seredina_h = width * 0.5, height * 0.5
 povorot_vectora = 1 / seredina_w  # чувствительность мышки
@@ -44,8 +56,8 @@ image_muha = pygame.image.load(os.path.join('data', 'muha.png'))
 razmer_image_muha = (image_muha.get_width(), image_muha.get_height())
 image_bullet = pygame.image.load(os.path.join('data', 'bullet.png'))
 razmer_image_bullet = (image_bullet.get_width(), image_bullet.get_height())
-zamok_image = pygame.image.load(os.path.join('data', 'end_zamok.jpg'))
-win_image = pygame.image.load(os.path.join('data', 'win_zamok.jpg'))
+zamok_image = load_image('end_zamok.jpg')
+win_image = load_image('win_zamok.jpg')
 image_solder0 = pygame.transform.scale(pygame.image.load(os.path.join('data/anim_soldier', '0.png')),
                                        (BLOCK_SIZE_X, BLOCK_SIZE_Y))
 image_solder1 = pygame.transform.scale(pygame.image.load(os.path.join('data/anim_soldier', '1.png')),
