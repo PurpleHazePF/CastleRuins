@@ -655,7 +655,6 @@ while menu:
         screen.blit(textsurface, (width * 0.4, height / 2))
         screen.blit(leave, (width * 0.38, height * 0.85))
     pygame.display.flip()
-
 while running:
     pygame.mixer.music.load('data/fon_music.mp3')
     pygame.mixer.music.play(-1)
@@ -696,6 +695,7 @@ while running:
     pygame.mouse.set_visible(False)
     speed_count = 0  # счетчик частоты смены кадров в анимации врагов
     num_image = 0  # номер отображаемой картинки в анимации врага
+    y = BLOCK_SIZE_Y * 2
     while running:
         speed_count += 1
         for event in pygame.event.get():
@@ -753,10 +753,10 @@ while running:
                 map_cord = set()
                 text_map = load_level(maps[map_number][0])
                 if map_number > 1:
-                    if y - SIZE > 900:
-                        y -= 859  # если ты находишься в нижней зоне карты, то тебя перекидывает вверх
+                    if y - SIZE > BLOCK_SIZE_Y * 14:
+                        y -= BLOCK_SIZE_Y * 13 + y % BLOCK_SIZE_Y  # если ты находишься в нижней зоне карты, то тебя перекидывает вверх
                     else:
-                        y = 80  # иначе на минимальную точку карты
+                        y = BLOCK_SIZE_Y * 1  # иначе на минимальную точку карты
                 cord_soldiers = []
                 for i in range(mobs):
                     cord_soldiers.append((enemyCoords[map_number][i][0] * BLOCK_SIZE_X,
