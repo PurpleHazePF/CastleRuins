@@ -550,7 +550,7 @@ class Persona(pygame.sprite.Sprite):  # для перемещения и отр�
     def __init__(self, group):
         super().__init__(group)
         self.rect = pygame.Rect((x, y, SIZE, SIZE))
-        self.hp = 5
+        self.hp = 100
 
     def update(self):
         self.rect.x = x
@@ -661,10 +661,19 @@ while running:
     pauseMenu = False
     points = 0
     mobs = 2
+    map_number = 0
+    text_map = load_level(maps[0][0])
+    map_cord = set()
+    for j, row in enumerate(text_map):
+        for i, bloc in enumerate(row):
+            if bloc == 'W':
+                map_cord.add((i * BLOCK_SIZE_X, j * BLOCK_SIZE_Y))
+    cord_soldiers = [(5.5 * BLOCK_SIZE_X, 5.5 * BLOCK_SIZE_Y), (7 * BLOCK_SIZE_X, 7 * BLOCK_SIZE_Y)]
     last_running = True
+    running2 = True
+    win = False
     start_time = time.time()
     heightMap = height + 900  # Изменённый размер для поля
-    map_number = 0
     all_sprites = pygame.sprite.Group()
     sprite = pygame.sprite.Sprite()
     sprite.image = l_image('gun.png', 'data')
@@ -696,12 +705,12 @@ while running:
     speed_count = 0  # счетчик частоты смены кадров в анимации врагов
     num_image = 0  # номер отображаемой картинки в анимации врага
     y = BLOCK_SIZE_Y * 2
-    while running:
+    while running2:
         speed_count += 1
         for event in pygame.event.get():
             if mobs == 0:
                 map_number += 1
-                if map_number == 10 and mobs == 0:
+                if map_number == 10:
                     pygame.mouse.set_visible(True)
                     pygame.mixer.music.pause()
                     pygame.mixer.music.load('data/win.mp3')
@@ -726,6 +735,11 @@ while running:
                                 pygame.mixer.music.pause()
                                 running = True
                                 last_running = False
+                                running2 = False
+                                map_number = 0
+                                points = 0
+                                mobs = 2
+                                win = True
                         else:
                             textsurface = start_text.render('ЗАНОВО', False, (28, 110, 103))
                             pygame.draw.rect(screen, (28, 110, 103),
@@ -740,10 +754,11 @@ while running:
                             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                                 running = False
                                 last_running = False
+                                running2 = False
                         else:
                             leave = start_text.render('ВЫХОД', False, (28, 110, 103))
                             pygame.draw.rect(screen, (28, 110, 103), (width / 4, height / 1.25,
-                                                                        width / 1.33 - width / 4, height * 0.2), 30)
+                                                                      width / 1.33 - width / 4, height * 0.2), 30)
                         screen.blit(textsurface, (width * 0.35, height / 2))
                         screen.blit(leave, (width * 0.38, height * 0.85))
                         pygame.display.flip()
@@ -790,9 +805,13 @@ while running:
                             if width * 0.3 < pos[0] < width * 0.7 and height * 0.53 < pos[1] < height * 0.65:
                                 pauseMenu = False
                                 running = False
+                                running2 = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if pygame.mouse.get_focused():
                     Raycast_hero_bullet(rays_hero_bullet, x, y, vector)
+        if win:
+            win = False
+            break
         if pygame.key.get_pressed()[pygame.K_q]:
             map_cord = set()
             for j, row in enumerate(text_map2):
@@ -907,6 +926,7 @@ while running:
                         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                             running = True
                             last_running = False
+                            running2 = False
                     else:
                         textsurface = start_text.render('ЗАНОВО', False, (28, 110, 103))
                         pygame.draw.rect(screen, (28, 110, 103), (width / 4, height / 2.25, width / 1.33 - width / 4,
@@ -919,6 +939,7 @@ while running:
                         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                             running = False
                             last_running = False
+                            running2 = False
                     else:
                         leave = start_text.render('ВЫХОД', False, (28, 110, 103))
                         pygame.draw.rect(screen, (28, 110, 103), (width / 4, height / 1.25,
