@@ -1,1 +1,4 @@
-pygame==2.1.2
+PyGame=2.1.0
+sqlite3=3.3.3
+pip=21.3.1
+Python=3.8.5
